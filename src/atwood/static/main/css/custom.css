@@ -71,6 +71,48 @@ h1 {
     background-color: rgba(255, 255, 255, 0.96);
 }
 
+.map-config-tabs {
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+.map-config-tabs .nav-link {
+    color: #d9d9d9;
+    border-color: transparent;
+}
+
+.map-config-tabs .nav-link:hover,
+.map-config-tabs .nav-link:focus-visible {
+    color: #f0d20d;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.map-config-tabs .nav-link.active {
+    color: #0f1720;
+    background: #f0d20d;
+    border-color: #f0d20d;
+    font-weight: 600;
+}
+
+.map-config-tab-content {
+    padding-top: 1rem;
+}
+
+.map-preview-modal {
+    background: #0f1720;
+    color: #edebeb;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.map-preview-modal .modal-header,
+.map-preview-modal .modal-footer {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.map-preview-modal .feedback-info { color: #edebeb; }
+.map-preview-modal .feedback-success { color: #75d98f; }
+.map-preview-modal .feedback-warning { color: #ffd66b; }
+.map-preview-modal .feedback-danger { color: #ff8a95; }
+
 #preview-table th,
 #preview-table td {
     font-size: 10px !important;
@@ -160,4 +202,3 @@ body.map-page > .container-fluid {
 .dataTables_info {
     color: #6f9a6f !important;
 }
-

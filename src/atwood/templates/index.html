@@ -13,7 +13,7 @@
 {% block navbar_controls %}
   <div class="d-flex ms-lg-3 mt-3 mt-lg-0">
     <button class="btn btn-outline-warning btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#map-config-panel" aria-expanded="false" aria-controls="map-config-panel">
-      Map data settings
+      Settings
     </button>
   </div>
 {% endblock %}
@@ -21,89 +21,103 @@
 {% block navbar_panel %}
   <div class="collapse map-config-panel" id="map-config-panel">
     <div class="container-fluid py-3">
-      <div class="config-card mb-3">
-      <h2 class="h6 mb-3">Source</h2>
-      <div class="row g-3 align-items-end">
-        <div class="col-12 col-lg-2">
-          <label class="form-label" for="source-type">Source type</label>
-          <select class="form-select form-select-sm" id="source-type">
-            <option value="google_sheet">Google Sheet</option>
-            <option value="csv">CSV file</option>
-            <option value="sqlite">SQLite database</option>
-          </select>
-        </div>
-        <div class="col-12 col-lg-4 source-field source-field-google_sheet">
-          <label class="form-label" for="sheet-url">Google Sheet URL</label>
-          <input class="form-control form-control-sm" id="sheet-url" type="url">
-        </div>
-        <div class="col-6 col-lg-2 source-field source-field-google_sheet source-field-csv">
-          <label class="form-label" for="header-row">Header row</label>
-          <input class="form-control form-control-sm" id="header-row" type="number" min="1" step="1">
-        </div>
-        <div class="col-12 col-lg-4 source-field source-field-csv d-none">
-          <label class="form-label" for="csv-path">CSV file</label>
-          <input class="form-control form-control-sm" list="csv-path-options" id="csv-path" type="text">
-          <datalist id="csv-path-options">
-            {% for csv_file in available_source_options.csv_files %}
-              <option value="{{ csv_file }}"></option>
-            {% endfor %}
-          </datalist>
-        </div>
-        <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
-          <label class="form-label" for="sqlite-path">SQLite file</label>
-          <input class="form-control form-control-sm" list="sqlite-path-options" id="sqlite-path" type="text">
-          <datalist id="sqlite-path-options">
-            {% for sqlite_file in available_source_options.sqlite_files %}
-              <option value="{{ sqlite_file }}"></option>
-            {% endfor %}
-          </datalist>
-        </div>
-        <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
-          <label class="form-label" for="sqlite-table">SQLite table</label>
-          <select class="form-select form-select-sm" id="sqlite-table">
-            <option value="">Choose a table</option>
-          </select>
-        </div>
-        <div class="col-12 col-lg-2">
-          <button class="btn btn-primary btn-sm w-100" id="inspect-source-button" type="button">Load fields</button>
-        </div>
-      </div>
-      </div>
-
-      <div class="row g-3 mt-1">
-        <div class="col-12 col-xl-5">
+      <ul class="nav nav-tabs map-config-tabs" id="map-config-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="data-source-tab" data-bs-toggle="tab" data-bs-target="#data-source-pane" type="button" role="tab" aria-controls="data-source-pane" aria-selected="true">Data source</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="field-mapping-tab" data-bs-toggle="tab" data-bs-target="#field-mapping-pane" type="button" role="tab" aria-controls="field-mapping-pane" aria-selected="false">Field mapping</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="profiles-tab" data-bs-toggle="tab" data-bs-target="#profiles-pane" type="button" role="tab" aria-controls="profiles-pane" aria-selected="false">Profiles</button>
+        </li>
+      </ul>
+      <div class="tab-content map-config-tab-content" id="map-config-tab-content">
+        <div class="tab-pane fade show active" id="data-source-pane" role="tabpanel" aria-labelledby="data-source-tab" tabindex="0">
           <div class="config-card">
-            <h2 class="h6 mb-3">Field mapping</h2>
+            <h2 class="h6 mb-3">Choose map data</h2>
+            <div class="row g-3 align-items-end">
+              <div class="col-12 col-lg-2">
+                <label class="form-label" for="source-type">Source type</label>
+                <select class="form-select form-select-sm" id="source-type">
+                  <option value="google_sheet">Google Sheet</option>
+                  <option value="csv">CSV file</option>
+                  <option value="sqlite">SQLite database</option>
+                </select>
+              </div>
+              <div class="col-12 col-lg-4 source-field source-field-google_sheet">
+                <label class="form-label" for="sheet-url">Google Sheet URL</label>
+                <input class="form-control form-control-sm" id="sheet-url" type="url">
+              </div>
+              <div class="col-6 col-lg-2 source-field source-field-google_sheet source-field-csv">
+                <label class="form-label" for="header-row">Header row</label>
+                <input class="form-control form-control-sm" id="header-row" type="number" min="1" step="1">
+              </div>
+              <div class="col-12 col-lg-4 source-field source-field-csv d-none">
+                <label class="form-label" for="csv-path">CSV file</label>
+                <input class="form-control form-control-sm" list="csv-path-options" id="csv-path" type="text">
+                <datalist id="csv-path-options">
+                  {% for csv_file in available_source_options.csv_files %}
+                    <option value="{{ csv_file }}"></option>
+                  {% endfor %}
+                </datalist>
+              </div>
+              <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
+                <label class="form-label" for="sqlite-path">SQLite file</label>
+                <input class="form-control form-control-sm" list="sqlite-path-options" id="sqlite-path" type="text">
+                <datalist id="sqlite-path-options">
+                  {% for sqlite_file in available_source_options.sqlite_files %}
+                    <option value="{{ sqlite_file }}"></option>
+                  {% endfor %}
+                </datalist>
+              </div>
+              <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
+                <label class="form-label" for="sqlite-table">SQLite table</label>
+                <select class="form-select form-select-sm" id="sqlite-table">
+                  <option value="">Choose a table</option>
+                </select>
+              </div>
+              <div class="col-12 col-lg-2">
+                <button class="btn btn-primary btn-sm w-100" id="inspect-source-button" type="button">Load fields</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="field-mapping-pane" role="tabpanel" aria-labelledby="field-mapping-tab" tabindex="0">
+          <div class="config-card">
+            <h2 class="h6 mb-3">Match fields to map points</h2>
             <div class="row g-2">
-              <div class="col-6 col-lg-4">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="point-id-field">Point ID</label>
                 <select class="form-select form-select-sm field-mapping-select" id="point-id-field"></select>
               </div>
-              <div class="col-6 col-lg-4">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="x-coord-field">X coordinate</label>
                 <select class="form-select form-select-sm field-mapping-select" id="x-coord-field"></select>
               </div>
-              <div class="col-6 col-lg-4">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="y-coord-field">Y coordinate</label>
                 <select class="form-select form-select-sm field-mapping-select" id="y-coord-field"></select>
               </div>
-              <div class="col-6 col-lg-6">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="description-field">Description</label>
                 <select class="form-select form-select-sm field-mapping-select" id="description-field"></select>
               </div>
-              <div class="col-6 col-lg-6">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="color-field">Point colour</label>
                 <input type="color" class="form-control form-control-sm form-control-color" id="color-field" value="#3388ff" title="Choose point colour">
                 <output class="small d-block mt-1" id="color-value" for="color-field">#3388ff</output>
               </div>
             </div>
-            <div class="d-flex gap-2 mt-3">
+            <div class="d-flex flex-wrap gap-2 mt-3">
               <button class="btn btn-success btn-sm" id="render-map-button" type="button">Render map</button>
               <button class="btn btn-outline-light btn-sm" id="reset-defaults-button" type="button">Reset defaults</button>
             </div>
           </div>
-          <div class="config-card mt-3">
-            <h2 class="h6 mb-3">Profiles</h2>
+        </div>
+        <div class="tab-pane fade" id="profiles-pane" role="tabpanel" aria-labelledby="profiles-tab" tabindex="0">
+          <div class="config-card">
+            <h2 class="h6 mb-3">Saved profiles</h2>
             <div class="row g-2 align-items-end">
               <div class="col-12 col-md-5">
                 <label class="form-label" for="profile-select">Profile</label>
@@ -120,21 +134,32 @@
             <div class="form-text small mt-2">Profiles are saved in this browser only.</div>
           </div>
         </div>
-        <div class="col-12 col-xl-7">
-          <div class="config-card">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h2 class="h6 mb-0">Preview & validation</h2>
-              <span class="small" id="preview-summary"></span>
-            </div>
-            <div id="feedback-message" class="small mb-2" role="status" aria-live="polite"></div>
-            <div class="table-responsive">
-              <table class="table table-sm table-dark table-striped mb-0" id="preview-table">
-                <caption class="visually-hidden">Preview of the first rows of the selected data source</caption>
-                <thead><tr><th scope="col">Load a source to preview its data</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="preview-modal" tabindex="-1" aria-labelledby="preview-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content map-preview-modal">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title fs-5" id="preview-modal-title">Preview &amp; validation</h2>
+            <span class="small" id="preview-summary"></span>
           </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close preview"></button>
+        </div>
+        <div class="modal-body">
+          <div id="feedback-message" class="small mb-3" role="status" aria-live="polite"></div>
+          <div class="table-responsive">
+            <table class="table table-sm table-dark table-striped mb-0" id="preview-table">
+              <caption class="visually-hidden">Preview of the first rows of the selected data source</caption>
+              <thead><tr><th scope="col">Load a source to preview its data</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Continue to field mapping</button>
         </div>
       </div>
     </div>
@@ -179,6 +204,9 @@
       saveProfileButton: document.getElementById('save-profile-button'),
       deleteProfileButton: document.getElementById('delete-profile-button')
     };
+    const settingsPanel = document.getElementById('map-config-panel');
+    const previewModal = new bootstrap.Modal(document.getElementById('preview-modal'));
+    const fieldMappingTab = document.getElementById('field-mapping-tab');
 
     const map = new maplibregl.Map({
       container: 'map',
@@ -549,7 +577,11 @@
       });
     }
 
-    async function inspectSource(persist = true) {
+    function showFieldMapping() {
+      bootstrap.Tab.getOrCreateInstance(fieldMappingTab).show();
+    }
+
+    async function inspectSource(persist = true, showPreview = true) {
       sourceReady = false;
       setFeedback('Loading source fields…', 'info');
       renderPreview([], 'Loading…');
@@ -576,6 +608,12 @@
           : 'Choose a SQLite table to continue.',
         sourceReady ? 'success' : 'warning'
       );
+      if (sourceReady) {
+        showFieldMapping();
+      }
+      if (showPreview) {
+        previewModal.show();
+      }
       return payload;
     }
 
@@ -648,7 +686,7 @@
       formElements.profileName.value = name;
       applyConfig(sourceConfig, fieldMapping);
       try {
-        await inspectSource(false);
+        await inspectSource(false, false);
         setFieldSelectValues(fieldMapping);
         await renderMapData();
         setFeedback(`Profile "${name}" loaded.`, 'success');
@@ -678,7 +716,7 @@
       const stored = getStoredConfig();
       applyConfig(stored.sourceConfig, stored.fieldMapping);
       try {
-        await inspectSource(false);
+        await inspectSource(false, false);
         setFieldSelectValues(stored.fieldMapping);
         await renderMapData();
       } catch (error) {
@@ -697,20 +735,23 @@
         formElements.previewSummary.textContent = '';
         renderPreview([], 'Could not load the source');
         setFeedback(error.message, 'danger');
+        previewModal.show();
       }
     });
     formElements.renderButton.addEventListener('click', async () => {
       try {
         await renderMapData();
+        bootstrap.Collapse.getOrCreateInstance(settingsPanel).hide();
       } catch (error) {
         setFeedback(error.message, 'danger');
+        previewModal.show();
       }
     });
     formElements.resetButton.addEventListener('click', async () => {
       localStorage.removeItem(storageKey);
       applyConfig(defaultSourceConfig, defaultFieldMapping);
       try {
-        await inspectSource(false);
+        await inspectSource(false, false);
         setFieldSelectValues(defaultFieldMapping);
         await renderMapData();
       } catch (error) {
