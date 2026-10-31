@@ -207,6 +207,8 @@
     const previewModal = new bootstrap.Modal(document.getElementById('preview-modal'));
     const fieldMappingTab = document.getElementById('field-mapping-tab');
     let profileIndicator;
+    let profileDropdownButton;
+    let profileDropdownMenu;
 
     const map = new maplibregl.Map({
       container: 'map',
@@ -274,11 +276,26 @@
       onAdd(mapInstance) {
         this.container = document.createElement('div');
         this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group map-status-control';
+        const profileDropdown = document.createElement('div');
+        profileDropdown.className = 'dropdown map-profile-dropdown';
+        profileDropdownButton = document.createElement('button');
+        profileDropdownButton.type = 'button';
+        profileDropdownButton.className = 'map-profile-button dropdown-toggle';
+        profileDropdownButton.id = 'active-profile-control';
+        profileDropdownButton.setAttribute('data-bs-toggle', 'dropdown');
+        profileDropdownButton.setAttribute('aria-expanded', 'false');
+        profileDropdownButton.setAttribute('aria-label', 'Choose saved profile');
         profileIndicator = document.createElement('span');
         profileIndicator.id = 'active-profile-label';
         profileIndicator.className = 'map-profile-indicator';
         profileIndicator.setAttribute('aria-live', 'polite');
-        this.container.appendChild(profileIndicator);
+        profileDropdownButton.appendChild(profileIndicator);
+        profileDropdownMenu = document.createElement('ul');
+        profileDropdownMenu.className = 'dropdown-menu dropdown-menu-dark map-profile-menu';
+        profileDropdownMenu.setAttribute('aria-labelledby', 'active-profile-control');
+        profileDropdown.append(profileDropdownButton, profileDropdownMenu);
+        this.container.appendChild(profileDropdown);
+        refreshMapProfileMenu();
         showCurrentSettings();
 
         const button = document.createElement('button');
@@ -465,7 +482,7 @@
     }
 
     function showProfile(name) {
-      setProfileIndicator(`Profile: ${name}`);
+      setProfileIndicator(name);
     }
 
     function renderPreview(rows, emptyMessage = 'Load a source to preview its data') {
@@ -682,6 +699,40 @@
         option.selected = name === selectedName;
         formElements.profileSelect.appendChild(option);
       });
+      refreshMapProfileMenu();
+    }
+
+    function refreshMapProfileMenu() {
+      if (!profileDropdownMenu) {
+        return;
+      }
+
+      const names = Object.keys(getProfiles()).sort((a, b) => a.localeCompare(b));
+      profileDropdownMenu.replaceChildren();
+      if (!names.length) {
+        const emptyItem = document.createElement('li');
+        const emptyMessage = document.createElement('span');
+        emptyMessage.className = 'dropdown-item-text';
+        emptyMessage.textContent = 'No saved profiles';
+        emptyItem.appendChild(emptyMessage);
+        profileDropdownMenu.appendChild(emptyItem);
+        return;
+      }
+
+      names.forEach((name) => {
+        const item = document.createElement('li');
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'dropdown-item';
+        option.textContent = name;
+        option.addEventListener('click', () => {
+          formElements.profileSelect.value = name;
+          bootstrap.Dropdown.getOrCreateInstance(profileDropdownButton).hide();
+          loadProfile(name);
+        });
+        item.appendChild(option);
+        profileDropdownMenu.appendChild(item);
+      });
     }
 
     function saveProfile() {
@@ -707,6 +758,7 @@
       if (!profile) {
         return;
       }
+      formElements.profileSelect.value = name;
       const sourceConfig = { ...defaultSourceConfig, ...profile.sourceConfig };
       const fieldMapping = { ...defaultFieldMapping, ...profile.fieldMapping };
       formElements.profileName.value = name;

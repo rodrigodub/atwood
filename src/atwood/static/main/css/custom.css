@@ -119,16 +119,53 @@ h1 {
     max-width: min(22rem, calc(100vw - 3rem));
 }
 
-.map-profile-indicator {
+.map-profile-dropdown {
+    position: relative;
+}
+
+.map-status-control .map-profile-button {
     align-items: center;
     background: rgba(15, 23, 32, 0.94);
+    border-left: 0;
+    box-sizing: border-box;
     color: #edebeb;
+    cursor: pointer;
     display: flex;
     font-size: 0.75rem;
+    gap: 0.35rem;
+    height: 29px;
+    max-width: min(16rem, calc(100vw - 8rem));
+    min-width: 0;
     overflow: hidden;
-    padding: 0 0.65rem;
+    padding: 0 8px;
     text-overflow: ellipsis;
     white-space: nowrap;
+    width: auto;
+}
+
+.map-status-control .map-profile-button:hover,
+.map-status-control .map-profile-button:focus-visible {
+    background: #223fb3;
+    color: #ffffff;
+}
+
+.map-profile-indicator {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.map-profile-menu {
+    font-family: inherit;
+    font-size: 0.75rem;
+    max-height: min(20rem, 50vh);
+    overflow-y: auto;
+}
+
+.map-profile-menu .dropdown-item,
+.map-profile-menu .dropdown-item-text {
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0.35rem 0.75rem;
 }
 
 .map-status-control button {

@@ -16,8 +16,9 @@ contracts identified in `.github/instructions/frontend.instructions.md`.
 
 ## Container refresh
 
-When instructed to **refresh container**, rebuild the image from the current
-workspace, replace the `atwood` container, and verify its health endpoint:
+When instructed to **refresh container** or **testux**, rebuild the image from
+the current workspace, replace the `atwood` container, and verify its health
+endpoint:
 
 ```bash
 docker build --tag atwood:local .
