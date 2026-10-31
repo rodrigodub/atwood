@@ -138,6 +138,12 @@
     </div>
   </div>
 
+  <script id="default-source-config" type="application/json">{{ default_source_config | tojson }}</script>
+  <script id="default-field-mapping" type="application/json">{{ default_field_mapping | tojson }}</script>
+{% endblock %}
+
+{% block content %}
+  <div id="map"></div>
   <div class="modal fade" id="preview-modal" tabindex="-1" aria-labelledby="preview-modal-title" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content map-preview-modal">
@@ -164,13 +170,6 @@
       </div>
     </div>
   </div>
-
-  <script id="default-source-config" type="application/json">{{ default_source_config | tojson }}</script>
-  <script id="default-field-mapping" type="application/json">{{ default_field_mapping | tojson }}</script>
-{% endblock %}
-
-{% block content %}
-  <div id="map"></div>
 {% endblock %}
 
 {% block extra_js %}

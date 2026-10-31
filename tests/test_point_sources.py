@@ -44,6 +44,7 @@ def test_home_page_renders(client: TestClient) -> None:
     assert 'id="field-mapping-tab"' in response.text
     assert 'id="profiles-tab"' in response.text
     assert 'id="preview-modal"' in response.text
+    assert response.text.index('id="preview-modal"') > response.text.index('id="map"')
 
 
 def test_inspect_csv_source_returns_fields_and_preview(client: TestClient) -> None:
