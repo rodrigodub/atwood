@@ -1,6 +1,6 @@
 [project]
 name = "atwood"
-version = "0.2.3"
+version = "0.2.4"
 description = "Every place has a story"
 readme = "README.md"
 authors = [

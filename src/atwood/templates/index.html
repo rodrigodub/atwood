@@ -206,6 +206,7 @@
     const settingsPanel = document.getElementById('map-config-panel');
     const previewModal = new bootstrap.Modal(document.getElementById('preview-modal'));
     const fieldMappingTab = document.getElementById('field-mapping-tab');
+    let profileIndicator;
 
     const map = new maplibregl.Map({
       container: 'map',
@@ -272,7 +273,14 @@
     class BasemapControl {
       onAdd(mapInstance) {
         this.container = document.createElement('div');
-        this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+        this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group map-status-control';
+        profileIndicator = document.createElement('span');
+        profileIndicator.id = 'active-profile-label';
+        profileIndicator.className = 'map-profile-indicator';
+        profileIndicator.setAttribute('aria-live', 'polite');
+        this.container.appendChild(profileIndicator);
+        showCurrentSettings();
+
         const button = document.createElement('button');
         button.type = 'button';
         button.style.width = 'auto';
@@ -440,6 +448,24 @@
     function setFeedback(message, type = 'info') {
       formElements.feedbackMessage.className = `small mb-2 feedback-${type}`;
       formElements.feedbackMessage.textContent = message;
+    }
+
+    function setProfileIndicator(label) {
+      if (profileIndicator) {
+        profileIndicator.textContent = label;
+      }
+    }
+
+    function showCurrentSettings() {
+      setProfileIndicator('Current settings');
+    }
+
+    function showUnsavedSettings() {
+      setProfileIndicator('Unsaved settings');
+    }
+
+    function showProfile(name) {
+      setProfileIndicator(`Profile: ${name}`);
     }
 
     function renderPreview(rows, emptyMessage = 'Load a source to preview its data') {
@@ -672,6 +698,7 @@
       profiles[name] = { sourceConfig: getSourceConfig(), fieldMapping: getFieldMapping() };
       localStorage.setItem(profilesKey, JSON.stringify(profiles));
       refreshProfileSelect(name);
+      showProfile(name);
       setFeedback(`Profile "${name}" saved.`, 'success');
     }
 
@@ -688,6 +715,7 @@
         await inspectSource(false, false);
         setFieldSelectValues(fieldMapping);
         await renderMapData();
+        showProfile(name);
         setFeedback(`Profile "${name}" loaded.`, 'success');
       } catch (error) {
         setFeedback(error.message, 'danger');
@@ -708,6 +736,7 @@
       localStorage.setItem(profilesKey, JSON.stringify(profiles));
       refreshProfileSelect();
       formElements.profileName.value = '';
+      showCurrentSettings();
       setFeedback(`Profile "${name}" deleted.`, 'success');
     }
 
@@ -726,6 +755,7 @@
     formElements.sourceType.addEventListener('change', () => {
       syncSourceFields();
       saveConfig();
+      showUnsavedSettings();
     });
     formElements.inspectButton.addEventListener('click', async () => {
       try {
@@ -749,6 +779,7 @@
     formElements.resetButton.addEventListener('click', async () => {
       localStorage.removeItem(storageKey);
       applyConfig(defaultSourceConfig, defaultFieldMapping);
+      showCurrentSettings();
       try {
         await inspectSource(false, false);
         setFieldSelectValues(defaultFieldMapping);
@@ -758,7 +789,10 @@
       }
     });
     document.querySelectorAll('input:not(.profile-control), select:not(.profile-control)').forEach((element) => {
-      element.addEventListener('change', saveConfig);
+      element.addEventListener('change', () => {
+        saveConfig();
+        showUnsavedSettings();
+      });
     });
 
     map.on('load', () => {
@@ -773,6 +807,8 @@
     formElements.profileSelect.addEventListener('change', () => {
       if (formElements.profileSelect.value) {
         loadProfile(formElements.profileSelect.value);
+      } else {
+        showCurrentSettings();
       }
     });
 

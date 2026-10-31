@@ -113,6 +113,28 @@ h1 {
 .map-preview-modal .feedback-warning { color: #ffd66b; }
 .map-preview-modal .feedback-danger { color: #ff8a95; }
 
+.map-status-control {
+    display: flex;
+    align-items: stretch;
+    max-width: min(22rem, calc(100vw - 3rem));
+}
+
+.map-profile-indicator {
+    align-items: center;
+    background: rgba(15, 23, 32, 0.94);
+    color: #edebeb;
+    display: flex;
+    font-size: 0.75rem;
+    overflow: hidden;
+    padding: 0 0.65rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.map-status-control button {
+    border-left: 1px solid rgba(15, 23, 32, 0.18);
+}
+
 #preview-table th,
 #preview-table td {
     font-size: 10px !important;
