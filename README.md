@@ -20,7 +20,18 @@ uv run pytest
 uv run pytest tests/test_api.py::test_health
 ```
 
-The health endpoint is available at `GET /health`.
+Atwood is a MapLibre map with a browser-saved data-source configuration panel.
+It can load points from a shared Google Sheet or bundled CSV and SQLite files,
+then render the result as clustered GeoJSON.
+
+- `GET /health` reports service health.
+- `GET /source/inspect/` previews fields, rows, and SQLite tables for the
+  selected source.
+- `GET /source/data/` validates a field mapping and returns GeoJSON for the map.
+
+Set `ATWOOD_DATA_ROOT` to use source data from another directory. By default,
+the app reads the bundled `datasets/` directory and `db.sqlite3` from the
+project root.
 
 ## Docker
 

@@ -18,6 +18,8 @@ RUN groupadd --system atwood && useradd --system --gid atwood atwood
 
 COPY --from=dependencies /install /usr/local
 COPY src ./src
+COPY datasets ./datasets
+COPY db.sqlite3 .
 
 USER atwood
 

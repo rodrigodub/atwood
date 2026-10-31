@@ -82,6 +82,8 @@ markupsafe==3.0.4
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
+numpy==2.5.4
+    # via pandas
 opentelemetry-api==1.45.2
     # via
     #   fastapi
@@ -108,6 +110,8 @@ opentelemetry-sdk==1.45.2
     #   opentelemetry-exporter-otlp-proto-http
 opentelemetry-semantic-conventions==0.66b2
     # via opentelemetry-sdk
+pandas==3.1.0
+    # via atwood
 protobuf==7.36.2
     # via
     #   googleapis-common-protos
@@ -126,6 +130,8 @@ pydantic-settings==2.16.2
     # via fastapi
 pygments==2.21.0
     # via rich
+python-dateutil==3.0.0
+    # via pandas
 python-dotenv==1.2.4
     # via
     #   pydantic-settings
@@ -152,6 +158,8 @@ sentry-sdk==2.73.0
     # via fastapi-cloud-cli
 shellingham==1.5.4
     # via typer
+six==1.17.0
+    # via python-dateutil
 starlette==1.10.0
     # via fastapi
 truststore==0.10.5 ; sys_platform != 'emscripten'
@@ -181,6 +189,10 @@ typing-inspection==0.4.4
     #   fastapi
     #   pydantic
     #   pydantic-settings
+tzdata==2026.6
+    # via
+    #   pandas
+    #   python-dateutil
 urllib3==2.8.0
     # via
     #   requests
