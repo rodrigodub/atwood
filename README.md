@@ -21,3 +21,13 @@ uv run pytest tests/test_api.py::test_health
 ```
 
 The health endpoint is available at `GET /health`.
+
+## Docker
+
+```bash
+docker build -t atwood .
+docker run --rm -p 8000:8000 atwood
+```
+
+The container serves the API at `http://localhost:8000` and reports its
+status at `http://localhost:8000/health`.
