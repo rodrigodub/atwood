@@ -2,7 +2,7 @@
 
 Every place has a story
 
-> <small>Version 0.1</small> | <small>&copy;2026 Rodrigo Nobrega</small>
+> <small>Version 0.2</small> | <small>&copy;2026 Rodrigo Nobrega</small>
 
 ## Development
 
