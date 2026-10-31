@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Map{% endblock %}
+{% block title %}Atwood{% endblock %}
 
 {% block head_extra %}
-  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='main/img/favicon.png') }}" />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" />
 {% endblock %}
 

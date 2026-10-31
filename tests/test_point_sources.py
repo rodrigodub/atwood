@@ -38,6 +38,8 @@ def test_home_page_renders(client: TestClient) -> None:
     assert response.status_code == 200
     assert "Map data settings" in response.text
     assert "Atwood" in response.text
+    assert "<title>Atwood</title>" in response.text
+    assert "/static/main/img/favicon.png" in response.text
 
 
 def test_inspect_csv_source_returns_fields_and_preview(client: TestClient) -> None:
