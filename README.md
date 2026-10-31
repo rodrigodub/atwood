@@ -25,9 +25,10 @@ The health endpoint is available at `GET /health`.
 ## Docker
 
 ```bash
-docker build -t atwood .
-docker run --rm -p 8000:8000 atwood
+docker build -t atwood:local .
+docker run --detach --name atwood --restart unless-stopped \
+  --publish 127.0.0.1:8080:8000 atwood:local
 ```
 
-The container serves the API at `http://localhost:8000` and reports its
-status at `http://localhost:8000/health`.
+The container serves the API at `http://localhost:8080` and reports its
+status at `http://localhost:8080/health`.

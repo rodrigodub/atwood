@@ -3,7 +3,7 @@ from fastapi import FastAPI
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Atwood", 
-                  version="0.1")
+                  version="0.1.1")
 
     @app.get("/health")
     def health() -> dict[str, str]:

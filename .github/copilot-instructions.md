@@ -20,6 +20,12 @@ uv build
 
 # Regenerate the runtime-only compatibility requirements file
 uv export --no-hashes --no-emit-project --no-dev -o requirements.txt
+
+# Refresh the Docker image and persistent container
+docker build --tag atwood:local .
+docker rm --force atwood 2>/dev/null || true
+docker run --detach --name atwood --restart unless-stopped \
+  --publish 127.0.0.1:8080:8000 atwood:local
 ```
 
 ## Architecture
@@ -34,3 +40,6 @@ uv export --no-hashes --no-emit-project --no-dev -o requirements.txt
 - `pyproject.toml` and `uv.lock` are authoritative. Regenerate the committed runtime-only `requirements.txt` with `uv export`.
 - Keep package code under `src/atwood/`, matching the configured package layout.
 - Python compatibility is `>=3.14`; `.python-version` selects Python 3.14 for local tooling.
+- A `refresh container` request rebuilds `atwood:local` and replaces the
+  persistent `atwood` Docker container; do not use a container restart because
+  it does not apply the rebuilt image.
