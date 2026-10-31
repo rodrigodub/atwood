@@ -1,0 +1,163 @@
+body {
+  background: url("../img/odysseus_bg.png") no-repeat center center fixed;
+  background-size: cover;
+}
+
+body.map-page {
+  background: #0f1720;
+}
+
+
+:root {
+  --bs-nav-tabs-link-active-color: #088217; /* Your custom color */
+}
+
+
+/*.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {*/
+h1 {
+    margin-top: 0;
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #223fb3;
+}
+
+.bg-light {
+    --bs-bg-opacity: 1;
+    background-color: #36373a !important;
+}
+
+.navbar-brand, .nav-link {
+    color: #edebeb;
+}
+
+.navbar-brand:hover, .nav-link:hover {
+    color: #f0d20d;
+}
+
+.text-muted {
+    color: #f0d20d;
+}
+
+.navbar-brand .text-muted {
+    color: #d9d9d9 !important;
+}
+
+.map-config-panel {
+    background: rgba(15, 23, 32, 0.95);
+    color: #edebeb;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.config-card {
+    background: rgba(34, 63, 179, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.map-config-panel .form-label,
+.map-config-panel .small {
+    color: #edebeb;
+}
+
+.map-config-panel .feedback-info { color: #edebeb; }
+.map-config-panel .feedback-success { color: #75d98f; }
+.map-config-panel .feedback-warning { color: #ffd66b; }
+.map-config-panel .feedback-danger { color: #ff8a95; }
+
+.map-config-panel .form-control,
+.map-config-panel .form-select {
+    background-color: rgba(255, 255, 255, 0.96);
+}
+
+#preview-table th,
+#preview-table td {
+    font-size: 10px !important;
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+body.map-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+body.map-page > .container-fluid {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Settings panel overlays the map instead of shrinking it */
+.config-panel-anchor {
+    position: relative;
+    height: 0;
+    z-index: 1030;
+}
+
+.config-panel-anchor .map-config-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    max-height: calc(100vh - 5rem);
+    overflow-y: auto;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.5);
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/*.container-fluid {*/
+/*    width: 100%;*/
+/*    margin-right: 0px;*/
+/*    margin-left: 0px;*/
+/*    !*width: 1600px;*!*/
+/*    padding-left: 0px;*/
+/*    padding-right: 0px;*/
+/*}*/
+
+.plotly-container {
+    width: 100%;
+    margin-right: 0px;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.map-container {
+  position: absolute;
+  top: 20px; /* Adjust based on your navbar height */
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* DataTables search box label and input */
+.dataTables_filter label,
+.dataTables_filter input {
+    color: #6f9a6f !important;
+}
+
+/* DataTables paging controls */
+.dataTables_paginate,
+.dataTables_paginate a,
+.dataTables_paginate span {
+    color: #333 !important;
+}
+
+/* DataTables "Show # entries" label */
+.dataTables_length label,
+.dataTables_length select {
+    color: #6f9a6f !important;
+}
+
+/* DataTables info text at the bottom */
+.dataTables_info {
+    color: #6f9a6f !important;
+}
+
