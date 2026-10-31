@@ -4,14 +4,14 @@ Atwood starts as a small Python application. Keep the current layout until a fea
 
 ```text
 .
-├── AGENTS.md                          # Overview of the agents and the workflow between them
+├── AGENTS.md                          # Agent roles and delivery workflow
 ├── .github/
-│   ├── agents/                 # Specialized Copilot agent profiles
-│   ├── copilot-instructions.md # Shared agent conventions
+│   ├── agents/                        # Specialized Copilot agent profiles
 │   │   ├── planner.agent.md           # Breaks features into tasks, no code edits
 │   │   ├── implementer.agent.md       # Writes code from the plan
 │   │   ├── reviewer.agent.md          # Reviews for quality, security, tests
 │   │   └── tester.agent.md            # Writes and runs tests
+│   ├── copilot-instructions.md        # Shared agent conventions
 │   ├── instructions/
 │   │   ├── frontend.instructions.md   # Applies only to matching files (applyTo glob)
 │   │   └── backend.instructions.md
@@ -19,7 +19,7 @@ Atwood starts as a small Python application. Keep the current layout until a fea
 │   │   ├── new-feature.prompt.md      # Reusable /new-feature slash command
 │   │   └── fix-bug.prompt.md
 │   ├── skills/
-│   │   └── <skill-name>/SKILL.md      # Optional: portable, specialized 
+│   │   └── python-delivery/SKILL.md   # Portable feature-delivery workflow
 │   └── workflows/                     # Cloud-agent setup and CI workflows
 ├── docs/
 │   ├── decisions/                     # Accepted architecture decision records

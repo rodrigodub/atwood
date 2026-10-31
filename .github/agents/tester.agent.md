@@ -1,5 +1,5 @@
 ---
-name: test-reviewer
+name: tester
 description: Reviews and improves tests for Atwood while preserving production behavior.
 tools: ["read", "search", "edit", "execute"]
 ---

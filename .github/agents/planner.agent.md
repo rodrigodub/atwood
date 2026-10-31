@@ -1,5 +1,5 @@
 ---
-name: product-planner
+name: planner
 description: Turns app ideas into scoped, testable implementation plans without editing production code.
 tools: ["read", "search"]
 ---

@@ -1,5 +1,5 @@
 ---
-name: python-implementer
+name: implementer
 description: Implements focused Python 3.14 changes in Atwood using uv and the repository conventions.
 tools: ["read", "search", "edit", "execute"]
 ---
