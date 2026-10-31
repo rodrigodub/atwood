@@ -2,7 +2,9 @@
 
 ## Current state
 
-Atwood is a Python 3.14 console application packaged with uv. The `atwood` command invokes `atwood:main`.
+Atwood is a Python 3.14 FastAPI application packaged with uv. The ASGI entry
+point is `atwood.api:app`; `create_app()` constructs the application and
+defines the health endpoint.
 
 ## Application boundaries
 
