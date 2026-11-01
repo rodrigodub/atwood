@@ -219,6 +219,7 @@
     const defaultSourceConfig = JSON.parse(document.getElementById('default-source-config').textContent);
     const defaultFieldMapping = JSON.parse(document.getElementById('default-field-mapping').textContent);
     const activeProfileStorageKey = 'atwood.active-profile.v1';
+    const mapCameraStorageKey = 'atwood.map-camera.v1';
 
     const formElements = {
       sourceType: document.getElementById('source-type'),
@@ -275,6 +276,12 @@
     let profileDropdownMenu;
     let profiles = [];
     let activeProfileId = null;
+    let renderedProfileId = null;
+    let activeCameraOperation = null;
+    let nextCameraOperation = 0;
+    let profileLoadVersion = 0;
+    let profileRefreshVersion = 0;
+    let mapCamera = readMapCamera();
 
     function getPersistedActiveProfileId() {
       try {
@@ -295,6 +302,36 @@
     function clearPersistedActiveProfile() {
       try {
         localStorage.removeItem(activeProfileStorageKey);
+      } catch {
+        // Continue when browser storage is unavailable.
+      }
+    }
+
+    function isValidMapCamera(camera) {
+      return camera && typeof camera === 'object'
+        && Array.isArray(camera.center) && camera.center.length === 2
+        && Number.isFinite(camera.center[0]) && camera.center[0] >= -180 && camera.center[0] <= 180
+        && Number.isFinite(camera.center[1]) && camera.center[1] >= -90 && camera.center[1] <= 90
+        && Number.isFinite(camera.zoom) && camera.zoom >= 0 && camera.zoom <= 24
+        && Number.isFinite(camera.bearing) && camera.bearing >= -360 && camera.bearing <= 360
+        && Number.isFinite(camera.pitch) && camera.pitch >= 0 && camera.pitch <= 60;
+    }
+
+    function readMapCamera() {
+      try {
+        localStorage.removeItem('atwood.profile-camera.v1');
+        const stored = JSON.parse(localStorage.getItem(mapCameraStorageKey) || 'null');
+        return isValidMapCamera(stored) ? stored : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function persistMapCamera() {
+      try {
+        if (isValidMapCamera(mapCamera)) {
+          localStorage.setItem(mapCameraStorageKey, JSON.stringify(mapCamera));
+        }
       } catch {
         // Continue when browser storage is unavailable.
       }
@@ -342,6 +379,62 @@
       pitch: 0
     });
 
+    function cameraForCurrentMap() {
+      const center = map.getCenter();
+      return {
+        center: [center.lng, center.lat],
+        zoom: map.getZoom(),
+        bearing: map.getBearing(),
+        pitch: map.getPitch()
+      };
+    }
+
+    function snapshotMapCamera() {
+      const camera = cameraForCurrentMap();
+      if (isValidMapCamera(camera)) {
+        mapCamera = camera;
+        persistMapCamera();
+      }
+    }
+
+    function applyProgrammaticCamera(change, onSettled) {
+      map.stop();
+      const operation = ++nextCameraOperation;
+      let settled = false;
+      const finish = () => {
+        if (settled || activeCameraOperation !== operation) {
+          return;
+        }
+        settled = true;
+        activeCameraOperation = null;
+        if (onSettled) {
+          onSettled();
+        }
+      };
+      activeCameraOperation = operation;
+      map.once('moveend', finish);
+      try {
+        change();
+      } catch (error) {
+        map.off('moveend', finish);
+        if (activeCameraOperation === operation) {
+          activeCameraOperation = null;
+        }
+        throw error;
+      }
+      requestAnimationFrame(() => {
+        if (!map.isMoving()) {
+          finish();
+        }
+      });
+    }
+
+    map.on('moveend', () => {
+      if (activeCameraOperation === null) {
+        snapshotMapCamera();
+      }
+    });
+
     // Keep the world covering the whole viewport: no empty bands around the map
     function fitWorldToViewport() {
       const { clientWidth, clientHeight } = map.getContainer();
@@ -349,18 +442,24 @@
         return;
       }
       const minZoom = Math.log2(Math.max(clientWidth, clientHeight) / 512);
-      map.setMinZoom(Math.max(minZoom, 0));
-      if (map.getZoom() < minZoom) {
-        map.setZoom(minZoom);
-      }
+      applyProgrammaticCamera(() => {
+        map.setMinZoom(Math.max(minZoom, 0));
+        if (map.getZoom() < minZoom) {
+          map.setZoom(minZoom);
+        }
+      });
+    }
+
+    function resizeMapProgrammatically() {
+      applyProgrammaticCamera(() => map.resize());
     }
 
     map.on('load', () => {
-      map.resize();
+      resizeMapProgrammatically();
       fitWorldToViewport();
     });
     map.on('resize', fitWorldToViewport);
-    new ResizeObserver(() => map.resize()).observe(map.getContainer());
+    new ResizeObserver(resizeMapProgrammatically).observe(map.getContainer());
 
     class BasemapControl {
       onAdd(mapInstance) {
@@ -616,7 +715,7 @@
       return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#000000' : '#ffffff';
     }
 
-    function addMapData(geojson) {
+    function addMapData(geojson, {profileId = null} = {}) {
       clearMapData();
       const pointColor = (geojson.features[0] && geojson.features[0].properties.display_hex_colour) || formElements.colorField.value;
       const textColor = getContrastTextColor(pointColor);
@@ -668,8 +767,16 @@
 
       const bounds = new maplibregl.LngLatBounds();
       geojson.features.forEach((feature) => bounds.extend(feature.geometry.coordinates));
-      if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 7 });
+      if (isValidMapCamera(mapCamera)) {
+        applyProgrammaticCamera(() => map.jumpTo(mapCamera));
+      } else if (!bounds.isEmpty()) {
+        applyProgrammaticCamera(
+          () => map.fitBounds(bounds, { padding: 50, maxZoom: 7 }),
+          () => {
+            mapCamera = cameraForCurrentMap();
+            persistMapCamera();
+          }
+        );
       }
     }
 
@@ -758,6 +865,7 @@
         throw new Error(payload.error || 'Could not render the selected source.');
       }
       pendingGeojson = payload.geojson;
+      renderedProfileId = null;
       if (map.loaded()) {
         addMapData(pendingGeojson);
       }
@@ -831,37 +939,48 @@
       });
       const profile = await response.json();
       if (!response.ok) throw new Error(profile.error || 'Could not save profile.');
+      profileRefreshVersion += 1;
       activeProfileId = profile.profile_id;
+      renderedProfileId = profile.profile_id;
       persistActiveProfile(profile.profile_id);
       profileNameModal.hide();
       applyConfig(getWizardSourceConfig(), getWizardFieldMapping());
       await refreshProfileSelect();
       pendingGeojson = profile.geojson;
-      if (map.loaded()) addMapData(pendingGeojson);
+      if (map.loaded()) addMapData(pendingGeojson, {profileId: profile.profile_id});
       showProfile(profile.profile_name);
       setFeedback(`Profile "${profile.profile_name}" saved.`, 'success');
     }
 
     async function loadProfile(profileId, {silent = false} = {}) {
-      const response = await fetch(`/profiles/${encodeURIComponent(profileId)}`);
-      const profile = await response.json();
-      if (!response.ok) {
-        const error = new Error(profile.error || 'Could not load profile.');
-        error.status = response.status;
-        throw error;
-      }
-      activeProfileId = profile.profile_id;
-      formElements.profileSelect.value = profile.profile_id;
-      applyConfig(profile.source_config, profile.field_mapping);
+      const loadVersion = ++profileLoadVersion;
+      profileRefreshVersion += 1;
       try {
+        const response = await fetch(`/profiles/${encodeURIComponent(profileId)}`);
+        const profile = await response.json();
+        if (loadVersion !== profileLoadVersion) {
+          return;
+        }
+        if (!response.ok) {
+          const error = new Error(profile.error || 'Could not load profile.');
+          error.status = response.status;
+          throw error;
+        }
+        activeProfileId = profile.profile_id;
+        renderedProfileId = profile.profile_id;
+        formElements.profileSelect.value = profile.profile_id;
+        applyConfig(profile.source_config, profile.field_mapping);
         pendingGeojson = profile.geojson;
-        if (map.loaded()) addMapData(pendingGeojson);
+        if (map.loaded()) addMapData(pendingGeojson, {profileId: profile.profile_id});
         showProfile(profile.profile_name);
         persistActiveProfile(profile.profile_id);
         if (!silent) {
           setFeedback(`Profile "${profile.profile_name}" loaded from cache.`, 'success');
         }
       } catch (error) {
+        if (loadVersion !== profileLoadVersion) {
+          return;
+        }
         if (!silent) {
           setFeedback(error.message, 'danger');
         }
@@ -880,7 +999,9 @@
       }
       const response = await fetch(`/profiles/${encodeURIComponent(profile.profile_id)}`, {method: 'DELETE'});
       if (!response.ok) throw new Error('Could not delete profile.');
+      profileRefreshVersion += 1;
       activeProfileId = null;
+      renderedProfileId = null;
       clearPersistedActiveProfile();
       await refreshProfileSelect();
       formElements.profileName.value = '';
@@ -996,7 +1117,7 @@
     map.on('load', () => {
       bindMapInteractions();
       if (pendingGeojson) {
-        addMapData(pendingGeojson);
+        addMapData(pendingGeojson, {profileId: renderedProfileId});
       }
     });
 
@@ -1031,12 +1152,18 @@
     });
     formElements.refreshProfileButton.addEventListener('click', async () => {
       if (!activeProfileId) { setFeedback('Choose a profile to refresh.', 'danger'); return; }
+      const profileId = activeProfileId;
+      const refreshVersion = ++profileRefreshVersion;
       try {
-        const response = await fetch(`/profiles/${encodeURIComponent(activeProfileId)}/refresh`, {method: 'POST'});
+        const response = await fetch(`/profiles/${encodeURIComponent(profileId)}/refresh`, {method: 'POST'});
         const profile = await response.json();
+        if (refreshVersion !== profileRefreshVersion || activeProfileId !== profileId) {
+          return;
+        }
         if (!response.ok) throw new Error(profile.error || 'Could not refresh profile.');
+        renderedProfileId = profile.profile_id;
         pendingGeojson = profile.geojson;
-        if (map.loaded()) addMapData(pendingGeojson);
+        if (map.loaded()) addMapData(pendingGeojson, {profileId: profile.profile_id});
         setFeedback(`Profile "${profile.profile_name}" refreshed.`, 'success');
       } catch (error) { setFeedback(error.message, 'danger'); }
     });

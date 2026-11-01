@@ -117,3 +117,60 @@ def test_page_contains_server_profile_flow(client: TestClient) -> None:
         "const profileId = getPersistedActiveProfileId();"
     )
     assert profile_list_loaded < persisted_profile_checked
+
+
+def test_page_uses_one_global_camera_across_profile_changes(client: TestClient) -> None:
+    page = client.get("/")
+
+    assert page.status_code == 200
+    script = page.text
+    assert "const mapCameraStorageKey = 'atwood.map-camera.v1';" in script
+    assert "camera.center[1] >= -90 && camera.center[1] <= 90" in script
+    assert "localStorage.setItem(mapCameraStorageKey, JSON.stringify(mapCamera));" in script
+    assert script.count("atwood.profile-camera.v1") == 1
+    assert "localStorage.removeItem('atwood.profile-camera.v1');" in script
+
+    map_data_added = script.index("map.addSource(mapLayerIds.source, {")
+    global_camera_checked = script.index("if (isValidMapCamera(mapCamera)) {", map_data_added)
+    global_camera_restored = script.index("map.jumpTo(mapCamera)", global_camera_checked)
+    assert map_data_added < global_camera_checked < global_camera_restored
+
+    assert """map.on('moveend', () => {
+      if (activeCameraOperation === null) {
+        snapshotMapCamera();
+      }
+    });""" in script
+    assert script.count("persistMapCamera();") == 2
+
+    add_map_data = script[
+        script.index("function addMapData("):script.index("function bindMapInteractions()")
+    ]
+    assert """if (isValidMapCamera(mapCamera)) {
+        applyProgrammaticCamera(() => map.jumpTo(mapCamera));
+      } else if (!bounds.isEmpty()) {
+        applyProgrammaticCamera(
+          () => map.fitBounds(bounds, { padding: 50, maxZoom: 7 }),
+          () => {
+            mapCamera = cameraForCurrentMap();
+            persistMapCamera();""" in add_map_data
+
+    load_profile = script[
+        script.index("async function loadProfile("):script.index("async function deleteProfile()")
+    ]
+    assert "profileRefreshVersion += 1;" in load_profile
+    assert "addMapData(pendingGeojson, {profileId: profile.profile_id});" in load_profile
+
+    refresh_profile = script[
+        script.index("formElements.refreshProfileButton.addEventListener"):script.index(
+            "formElements.profileSelect.addEventListener"
+        )
+    ]
+    stale_refresh_guard = (
+        "if (refreshVersion !== profileRefreshVersion || activeProfileId !== profileId) {\n"
+        "          return;\n"
+        "        }"
+    )
+    assert stale_refresh_guard in refresh_profile
+    assert refresh_profile.index(stale_refresh_guard) < refresh_profile.index(
+        "pendingGeojson = profile.geojson;"
+    )
