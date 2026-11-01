@@ -14,6 +14,21 @@ Use **web-designer** only when a request changes the map UI, settings panel,
 responsive layout, or interaction design. It must preserve the frontend
 contracts identified in `.github/instructions/frontend.instructions.md`.
 
+## Profile persistence
+
+- `datasets/profiles.parquet` is the authoritative shared store for saved
+  profiles, their source configuration, field mappings, and cached GeoJSON.
+  `ATWOOD_PROFILE_STORE` overrides its path; otherwise it resolves from
+  `ATWOOD_DATA_ROOT/datasets/profiles.parquet`.
+- Keep profile reads cached by default. Only an explicit profile refresh should
+  re-fetch its source.
+- Use `atwood.services.profile_persistence.ProfileStore` for mutations. It
+  locks, validates, and atomically replaces the Parquet file; do not bypass it
+  or silently replace a corrupt or unsupported store.
+- Docker refreshes must retain the `/app/datasets` bind mount. The mounted host
+  directory must be writable by the runtime user so the store, lock, and
+  temporary files can be created.
+
 ## Container refresh
 
 When instructed to **refresh container** or **testux**, rebuild the image from

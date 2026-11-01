@@ -32,6 +32,20 @@ then render the result as clustered GeoJSON.
   load cached GeoJSON. `POST /profiles/{profile_id}/refresh` re-fetches a
   profile's original source.
 
+## Profile storage
+
+Profiles are stored server-side in `datasets/profiles.parquet`, including the
+source configuration, field mapping, and cached GeoJSON features. Creating or
+refreshing a profile reads its source; loading an existing profile uses the
+cache and does not contact the original source. Delete and refresh actions
+update the same store.
+
+Set `ATWOOD_PROFILE_STORE` to use an explicit Parquet file. Otherwise, the
+store resolves to `ATWOOD_DATA_ROOT/datasets/profiles.parquet`; if
+`ATWOOD_DATA_ROOT` is unset, it resolves from the project working directory.
+The application serializes mutations, atomically replaces the store, and
+refuses to overwrite a corrupt or unsupported file.
+
 Set `ATWOOD_DATA_ROOT` to use source data from another directory. By default,
 the app reads the bundled `datasets/` directory and `db.sqlite3` from the
 project root.
@@ -53,4 +67,6 @@ The container serves the API at `http://localhost:8080` and reports its
 status at `http://localhost:8080/health`.
 The bind mount keeps `datasets/profiles.parquet` when the container is
 replaced. The host directory must be writable by UID/GID 10001 (or otherwise
-grant that user write access).
+grant that user write access), including permission to create the adjacent
+lock and temporary files. Do not copy a runtime profile store into the image;
+always preserve it through the mounted `datasets/` directory.

@@ -40,6 +40,15 @@ docker run --detach --name atwood --restart unless-stopped \
 - The MapLibre templates and local static assets are under `src/atwood/templates/` and `src/atwood/static/`. Preserve their browser-side configuration and profile behavior when changing the map UI.
 - Use the `web-designer` agent for settings-panel and map-interface redesigns before implementation. Preserve IDs, Bootstrap attributes, local-storage keys, endpoint paths, and MapLibre identifiers unless their dependent JavaScript changes together.
 - `atwood.services.point_sources` implements the Google Sheet, CSV, and SQLite inspection and GeoJSON endpoints. It resolves local files from the current working directory or `ATWOOD_DATA_ROOT`.
+- `atwood.services.profile_persistence.ProfileStore` owns saved-profile
+  persistence in `datasets/profiles.parquet`, or the explicit
+  `ATWOOD_PROFILE_STORE` path. It stores source configuration, mappings, and
+  cached GeoJSON. Reuse it for all profile mutations rather than accessing
+  Parquet directly.
+- Profile loads use cached GeoJSON; only explicit refreshes re-fetch the
+  original source. Preserve the store's lock, corruption validation, and
+  atomic-replace behavior. Never silently overwrite a corrupt or unsupported
+  profile store.
 - Copilot cloud sessions reproduce the local environment with `uv sync --locked` in `.github/workflows/copilot-setup-steps.yml`.
 
 ## Repository conventions
@@ -51,3 +60,6 @@ docker run --detach --name atwood --restart unless-stopped \
 - A `refresh container` or `testux` request rebuilds `atwood:local` and
   replaces the persistent `atwood` Docker container; do not use a container
   restart because it does not apply the rebuilt image.
+- Keep the `/app/datasets` bind mount on every container replacement. It
+  persists `profiles.parquet`; the host mount must permit the runtime user to
+  create the store's adjacent lock and temporary files.

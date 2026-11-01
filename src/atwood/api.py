@@ -32,7 +32,7 @@ templates = Jinja2Templates(directory=PACKAGE_ROOT / "templates")
 def create_app() -> FastAPI:
     # -------------------------- VERSION --------------------------
     app = FastAPI(title="Atwood", 
-                  version="0.3")
+                  version="0.3.1")
     # -------------------------------------------------------------
     app.mount("/static", StaticFiles(directory=PACKAGE_ROOT / "static"), name="static")
 
