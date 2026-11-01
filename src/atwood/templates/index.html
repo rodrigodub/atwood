@@ -126,12 +126,12 @@
                 </select>
               </div>
               <div class="col-12 col-md-7 d-flex flex-wrap gap-2">
-                <input class="form-control form-control-sm profile-control flex-grow-1" style="min-width: 10rem; width: auto;" id="profile-name" type="text" placeholder="Profile name" maxlength="60" aria-label="Profile name">
-                <button class="btn btn-outline-warning btn-sm text-nowrap" id="save-profile-button" type="button">Save profile</button>
+                <button class="btn btn-outline-warning btn-sm text-nowrap" id="new-profile-button" type="button">New +</button>
+                <button class="btn btn-outline-light btn-sm text-nowrap" id="refresh-profile-button" type="button">Refresh profile</button>
                 <button class="btn btn-outline-danger btn-sm text-nowrap" id="delete-profile-button" type="button">Delete profile</button>
               </div>
             </div>
-            <div class="form-text small mt-2">Profiles are saved in this browser only.</div>
+            <div class="form-text small mt-2">Profiles and cached map data are saved on this server.</div>
           </div>
         </div>
       </div>
@@ -170,6 +170,47 @@
       </div>
     </div>
   </div>
+  <div class="modal fade" id="source-selection-modal" tabindex="-1" aria-labelledby="source-selection-modal-title" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content map-preview-modal">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="source-selection-modal-title">1. Select source</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancel new profile"></button></div>
+      <div class="modal-body">
+        <p class="small">Choose a source and inspect its fields before mapping them.</p>
+        <div class="mb-2"><label class="form-label" for="wizard-source-type">Source type</label><select class="form-select" id="wizard-source-type"><option value="google_sheet">Google Sheet</option><option value="csv">CSV file</option><option value="sqlite">SQLite database</option></select></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-google_sheet"><label class="form-label" for="wizard-sheet-url">Google Sheet URL</label><input class="form-control" id="wizard-sheet-url" type="url"></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-csv"><label class="form-label" for="wizard-csv-path">CSV file</label><input class="form-control" id="wizard-csv-path" list="csv-path-options"></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-sqlite"><label class="form-label" for="wizard-sqlite-path">SQLite file</label><input class="form-control" id="wizard-sqlite-path" list="sqlite-path-options"></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-sqlite"><label class="form-label" for="wizard-sqlite-table">SQLite table</label><select class="form-select" id="wizard-sqlite-table"><option value="">Choose a table</option></select></div>
+        <div class="mb-3 wizard-source-field wizard-source-field-google_sheet wizard-source-field-csv"><label class="form-label" for="wizard-header-row">Header row</label><input class="form-control" id="wizard-header-row" type="number" min="1" step="1"></div>
+        <button class="btn btn-outline-light btn-sm" id="wizard-inspect-source-button" type="button">Inspect source</button>
+        <div class="small mt-3" id="wizard-source-feedback" role="status" aria-live="polite"></div>
+        <div class="table-responsive mt-2"><table class="table table-sm table-dark mb-0" id="wizard-preview-table"><caption class="visually-hidden">Source preview</caption><thead><tr><th scope="col">Inspect a source to preview it</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary btn-sm" id="source-selection-next-button" disabled>Continue to field mapping</button></div>
+    </div></div>
+  </div>
+  <div class="modal fade" id="field-mapping-modal" tabindex="-1" aria-labelledby="field-mapping-modal-title" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content map-preview-modal">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="field-mapping-modal-title">2. Map fields</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancel new profile"></button></div>
+      <div class="modal-body">
+        <p class="small">Choose the fields used for each point, then validate the preview.</p>
+        <div class="mb-2"><label class="form-label" for="wizard-point-id-field">Point ID</label><select class="form-select wizard-field-mapping-select" id="wizard-point-id-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-x-coord-field">X coordinate</label><select class="form-select wizard-field-mapping-select" id="wizard-x-coord-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-y-coord-field">Y coordinate</label><select class="form-select wizard-field-mapping-select" id="wizard-y-coord-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-description-field">Description</label><select class="form-select wizard-field-mapping-select" id="wizard-description-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-color-field">Point colour</label><input class="form-control form-control-color" id="wizard-color-field" type="color" value="#3388ff"></div>
+        <button type="button" class="btn btn-outline-light btn-sm" id="wizard-validate-mapping-button">Preview and validate</button>
+        <div class="small mt-3" id="wizard-mapping-feedback" role="status" aria-live="polite"></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary btn-sm" id="field-mapping-next-button" disabled>Name profile</button></div>
+    </div></div>
+  </div>
+  <div class="modal fade" id="profile-name-modal" tabindex="-1" aria-labelledby="profile-name-modal-title" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content map-preview-modal">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="profile-name-modal-title">3. Save profile</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancel new profile"></button></div>
+      <div class="modal-body"><label class="form-label" for="profile-name">Profile name</label><input class="form-control" id="profile-name" maxlength="60" required><div class="small mt-2" id="profile-name-feedback" role="status" aria-live="polite"></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary btn-sm" id="save-profile-button">Save profile</button></div>
+    </div></div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
@@ -177,8 +218,6 @@
   <script>
     const defaultSourceConfig = JSON.parse(document.getElementById('default-source-config').textContent);
     const defaultFieldMapping = JSON.parse(document.getElementById('default-field-mapping').textContent);
-    const storageKey = 'keyboard-odyssey.map-config.v1';
-    const profilesKey = 'keyboard-odyssey.map-profiles.v1';
 
     const formElements = {
       sourceType: document.getElementById('source-type'),
@@ -200,15 +239,41 @@
       resetButton: document.getElementById('reset-defaults-button'),
       profileSelect: document.getElementById('profile-select'),
       profileName: document.getElementById('profile-name'),
+      profileNameFeedback: document.getElementById('profile-name-feedback'),
       saveProfileButton: document.getElementById('save-profile-button'),
+      newProfileButton: document.getElementById('new-profile-button'),
+      refreshProfileButton: document.getElementById('refresh-profile-button'),
       deleteProfileButton: document.getElementById('delete-profile-button')
     };
     const settingsPanel = document.getElementById('map-config-panel');
     const previewModal = new bootstrap.Modal(document.getElementById('preview-modal'));
+    const sourceSelectionModal = new bootstrap.Modal(document.getElementById('source-selection-modal'));
+    const fieldMappingModal = new bootstrap.Modal(document.getElementById('field-mapping-modal'));
+    const profileNameModal = new bootstrap.Modal(document.getElementById('profile-name-modal'));
     const fieldMappingTab = document.getElementById('field-mapping-tab');
+    const wizard = {
+      sourceType: document.getElementById('wizard-source-type'),
+      sheetUrl: document.getElementById('wizard-sheet-url'),
+      csvPath: document.getElementById('wizard-csv-path'),
+      sqlitePath: document.getElementById('wizard-sqlite-path'),
+      sqliteTable: document.getElementById('wizard-sqlite-table'),
+      headerRow: document.getElementById('wizard-header-row'),
+      pointIdField: document.getElementById('wizard-point-id-field'),
+      xCoordField: document.getElementById('wizard-x-coord-field'),
+      yCoordField: document.getElementById('wizard-y-coord-field'),
+      descriptionField: document.getElementById('wizard-description-field'),
+      colorField: document.getElementById('wizard-color-field'),
+      sourceFeedback: document.getElementById('wizard-source-feedback'),
+      mappingFeedback: document.getElementById('wizard-mapping-feedback'),
+      previewTable: document.getElementById('wizard-preview-table'),
+      sourceNext: document.getElementById('source-selection-next-button'),
+      mappingNext: document.getElementById('field-mapping-next-button')
+    };
     let profileIndicator;
     let profileDropdownButton;
     let profileDropdownMenu;
+    let profiles = [];
+    let activeProfileId = null;
 
     const map = new maplibregl.Map({
       container: 'map',
@@ -336,28 +401,6 @@
     let pendingGeojson = null;
     let sourceReady = false;
 
-    function getStoredConfig() {
-      try {
-        const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        return {
-          sourceConfig: { ...defaultSourceConfig, ...(stored.sourceConfig || {}) },
-          fieldMapping: { ...defaultFieldMapping, ...(stored.fieldMapping || {}) }
-        };
-      } catch {
-        return {
-          sourceConfig: { ...defaultSourceConfig },
-          fieldMapping: { ...defaultFieldMapping }
-        };
-      }
-    }
-
-    function saveConfig() {
-      localStorage.setItem(storageKey, JSON.stringify({
-        sourceConfig: getSourceConfig(),
-        fieldMapping: getFieldMapping()
-      }));
-    }
-
     function getSourceConfig() {
       return {
         source_type: formElements.sourceType.value,
@@ -376,6 +419,22 @@
         y_coord_field: formElements.yCoordField.value,
         description_field: formElements.descriptionField.value,
         point_color: formElements.colorField.value
+      };
+    }
+
+    function getWizardSourceConfig() {
+      return {
+        source_type: wizard.sourceType.value, sheet_url: wizard.sheetUrl.value.trim(),
+        csv_path: wizard.csvPath.value.trim(), sqlite_path: wizard.sqlitePath.value.trim(),
+        sqlite_table: wizard.sqliteTable.value, header_row: wizard.headerRow.value || '1'
+      };
+    }
+
+    function getWizardFieldMapping() {
+      return {
+        point_id_field: wizard.pointIdField.value, x_coord_field: wizard.xCoordField.value,
+        y_coord_field: wizard.yCoordField.value, description_field: wizard.descriptionField.value,
+        point_color: wizard.colorField.value
       };
     }
 
@@ -486,8 +545,12 @@
     }
 
     function renderPreview(rows, emptyMessage = 'Load a source to preview its data') {
-      const thead = formElements.previewTable.querySelector('thead');
-      const tbody = formElements.previewTable.querySelector('tbody');
+      renderPreviewTable(formElements.previewTable, rows, emptyMessage);
+    }
+
+    function renderPreviewTable(table, rows, emptyMessage = 'Load a source to preview its data') {
+      const thead = table.querySelector('thead');
+      const tbody = table.querySelector('tbody');
       thead.innerHTML = '';
       tbody.innerHTML = '';
 
@@ -623,7 +686,7 @@
       bootstrap.Tab.getOrCreateInstance(fieldMappingTab).show();
     }
 
-    async function inspectSource(persist = true, showPreview = true) {
+    async function inspectSource(showPreview = true) {
       sourceReady = false;
       setFeedback('Loading source fields…', 'info');
       renderPreview([], 'Loading…');
@@ -641,9 +704,6 @@
         (payload.fields || []).length ? 'No rows returned' : 'Choose a source table to preview its data'
       );
       sourceReady = (payload.fields || []).length > 0;
-      if (persist) {
-        saveConfig();
-      }
       setFeedback(
         sourceReady
           ? 'Source loaded. Confirm or adjust the field mappings, then render the map.'
@@ -676,27 +736,20 @@
       if (map.loaded()) {
         addMapData(pendingGeojson);
       }
-      saveConfig();
       setFeedback(`Loaded ${payload.geojson.features.length} point(s) on the map.`, 'success');
     }
 
-    function getProfiles() {
-      try {
-        const profiles = JSON.parse(localStorage.getItem(profilesKey) || '{}');
-        return profiles && typeof profiles === 'object' && !Array.isArray(profiles) ? profiles : {};
-      } catch {
-        return {};
-      }
-    }
-
-    function refreshProfileSelect(selectedName = '') {
-      const names = Object.keys(getProfiles()).sort((a, b) => a.localeCompare(b));
+    async function refreshProfileSelect(selectedId = activeProfileId) {
+      const response = await fetch('/profiles/');
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not load profiles.');
+      profiles = payload.profiles;
       formElements.profileSelect.innerHTML = '<option value="">Choose a saved profile</option>';
-      names.forEach((name) => {
+      profiles.forEach((profile) => {
         const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        option.selected = name === selectedName;
+        option.value = profile.profile_id;
+        option.textContent = profile.profile_name;
+        option.selected = profile.profile_id === selectedId;
         formElements.profileSelect.appendChild(option);
       });
       refreshMapProfileMenu();
@@ -707,106 +760,164 @@
         return;
       }
 
-      const names = Object.keys(getProfiles()).sort((a, b) => a.localeCompare(b));
       profileDropdownMenu.replaceChildren();
-      if (!names.length) {
+      if (!profiles.length) {
         const emptyItem = document.createElement('li');
         const emptyMessage = document.createElement('span');
         emptyMessage.className = 'dropdown-item-text';
         emptyMessage.textContent = 'No saved profiles';
         emptyItem.appendChild(emptyMessage);
         profileDropdownMenu.appendChild(emptyItem);
-        return;
       }
 
-      names.forEach((name) => {
+      profiles.forEach((profile) => {
         const item = document.createElement('li');
         const option = document.createElement('button');
         option.type = 'button';
         option.className = 'dropdown-item';
-        option.textContent = name;
+        option.textContent = profile.profile_name;
         option.addEventListener('click', () => {
-          formElements.profileSelect.value = name;
+          formElements.profileSelect.value = profile.profile_id;
           bootstrap.Dropdown.getOrCreateInstance(profileDropdownButton).hide();
-          loadProfile(name);
+          loadProfile(profile.profile_id);
         });
         item.appendChild(option);
         profileDropdownMenu.appendChild(item);
       });
+      const newItem = document.createElement('li');
+      const newOption = document.createElement('button');
+      newOption.type = 'button';
+      newOption.className = 'dropdown-item';
+      newOption.textContent = 'New +';
+      newOption.addEventListener('click', startNewProfile);
+      newItem.appendChild(newOption);
+      profileDropdownMenu.appendChild(newItem);
     }
 
-    function saveProfile() {
+    async function saveProfile() {
       const name = formElements.profileName.value.trim();
       if (!name) {
-        setFeedback('Enter a profile name before saving.', 'danger');
+        formElements.profileNameFeedback.textContent = 'Enter a profile name before saving.';
         return;
       }
-      const profiles = getProfiles();
-      if (Object.prototype.hasOwnProperty.call(profiles, name)
-          && !window.confirm(`Profile "${name}" already exists. Overwrite it?`)) {
-        return;
-      }
-      profiles[name] = { sourceConfig: getSourceConfig(), fieldMapping: getFieldMapping() };
-      localStorage.setItem(profilesKey, JSON.stringify(profiles));
-      refreshProfileSelect(name);
-      showProfile(name);
-      setFeedback(`Profile "${name}" saved.`, 'success');
+      const response = await fetch('/profiles/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({profile_name: name, source_config: getWizardSourceConfig(), field_mapping: getWizardFieldMapping()})
+      });
+      const profile = await response.json();
+      if (!response.ok) throw new Error(profile.error || 'Could not save profile.');
+      activeProfileId = profile.profile_id;
+      profileNameModal.hide();
+      applyConfig(getWizardSourceConfig(), getWizardFieldMapping());
+      await refreshProfileSelect();
+      pendingGeojson = profile.geojson;
+      if (map.loaded()) addMapData(pendingGeojson);
+      showProfile(profile.profile_name);
+      setFeedback(`Profile "${profile.profile_name}" saved.`, 'success');
     }
 
-    async function loadProfile(name) {
-      const profile = getProfiles()[name];
-      if (!profile) {
-        return;
-      }
-      formElements.profileSelect.value = name;
-      const sourceConfig = { ...defaultSourceConfig, ...profile.sourceConfig };
-      const fieldMapping = { ...defaultFieldMapping, ...profile.fieldMapping };
-      formElements.profileName.value = name;
-      applyConfig(sourceConfig, fieldMapping);
+    async function loadProfile(profileId) {
+      const response = await fetch(`/profiles/${encodeURIComponent(profileId)}`);
+      const profile = await response.json();
+      if (!response.ok) throw new Error(profile.error || 'Could not load profile.');
+      activeProfileId = profile.profile_id;
+      formElements.profileSelect.value = profile.profile_id;
+      applyConfig(profile.source_config, profile.field_mapping);
       try {
-        await inspectSource(false, false);
-        setFieldSelectValues(fieldMapping);
-        await renderMapData();
-        showProfile(name);
-        setFeedback(`Profile "${name}" loaded.`, 'success');
+        pendingGeojson = profile.geojson;
+        if (map.loaded()) addMapData(pendingGeojson);
+        showProfile(profile.profile_name);
+        setFeedback(`Profile "${profile.profile_name}" loaded from cache.`, 'success');
       } catch (error) {
         setFeedback(error.message, 'danger');
       }
     }
 
-    function deleteProfile() {
-      const name = formElements.profileSelect.value;
-      if (!name) {
+    async function deleteProfile() {
+      const profile = profiles.find((item) => item.profile_id === activeProfileId);
+      if (!profile) {
         setFeedback('Choose a profile to delete.', 'danger');
         return;
       }
-      if (!window.confirm(`Delete profile "${name}"?`)) {
+      if (!window.confirm(`Delete profile "${profile.profile_name}"?`)) {
         return;
       }
-      const profiles = getProfiles();
-      delete profiles[name];
-      localStorage.setItem(profilesKey, JSON.stringify(profiles));
-      refreshProfileSelect();
+      const response = await fetch(`/profiles/${encodeURIComponent(profile.profile_id)}`, {method: 'DELETE'});
+      if (!response.ok) throw new Error('Could not delete profile.');
+      activeProfileId = null;
+      await refreshProfileSelect();
       formElements.profileName.value = '';
       showCurrentSettings();
-      setFeedback(`Profile "${name}" deleted.`, 'success');
+      setFeedback(`Profile "${profile.profile_name}" deleted.`, 'success');
     }
 
-    async function reloadFromStorage() {
-      const stored = getStoredConfig();
-      applyConfig(stored.sourceConfig, stored.fieldMapping);
-      try {
-        await inspectSource(false, false);
-        setFieldSelectValues(stored.fieldMapping);
-        await renderMapData();
-      } catch (error) {
-        setFeedback(error.message, 'danger');
-      }
+    function startNewProfile() {
+      const source = getSourceConfig();
+      wizard.sourceType.value = source.source_type;
+      wizard.sheetUrl.value = source.sheet_url;
+      wizard.csvPath.value = source.csv_path;
+      wizard.sqlitePath.value = source.sqlite_path;
+      wizard.headerRow.value = source.header_row;
+      wizard.colorField.value = formElements.colorField.value;
+      syncWizardSourceFields();
+      wizard.sourceNext.disabled = true;
+      wizard.mappingNext.disabled = true;
+      wizard.sourceFeedback.textContent = '';
+      wizard.mappingFeedback.textContent = '';
+      formElements.profileNameFeedback.textContent = '';
+      renderPreviewTable(wizard.previewTable, [], 'Inspect a source to preview it');
+      sourceSelectionModal.show();
+    }
+
+    function syncWizardSourceFields() {
+      const sourceType = wizard.sourceType.value;
+      document.querySelectorAll('.wizard-source-field').forEach((element) => {
+        element.classList.toggle('d-none', !element.classList.contains(`wizard-source-field-${sourceType}`));
+      });
+    }
+
+    function populateWizardFields(fields) {
+      const preferred = getFieldMapping();
+      const elements = {
+        point_id_field: wizard.pointIdField, x_coord_field: wizard.xCoordField,
+        y_coord_field: wizard.yCoordField, description_field: wizard.descriptionField
+      };
+      Object.entries(elements).forEach(([key, select]) => {
+        select.replaceChildren(new Option('Choose a field', ''));
+        fields.forEach((field) => select.add(new Option(field, field, false, field === preferred[key])));
+      });
+    }
+
+    async function inspectWizardSource() {
+      wizard.sourceNext.disabled = true;
+      wizard.mappingNext.disabled = true;
+      wizard.sourceFeedback.textContent = 'Inspecting source…';
+      const response = await fetch(buildUrl('/source/inspect/', getWizardSourceConfig()));
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not inspect the selected source.');
+      wizard.sqliteTable.replaceChildren(new Option('Choose a table', ''));
+      (payload.sqlite_tables || []).forEach((table) => wizard.sqliteTable.add(new Option(table, table, false, table === getWizardSourceConfig().sqlite_table)));
+      populateWizardFields(payload.fields || []);
+      populateFieldSelects(payload.fields || [], getWizardFieldMapping());
+      renderPreviewTable(wizard.previewTable, payload.preview_rows || [], 'No rows returned');
+      wizard.sourceNext.disabled = !(payload.fields || []).length;
+      wizard.sourceFeedback.textContent = wizard.sourceNext.disabled
+        ? 'Choose a SQLite table, then inspect the source again.' : `${payload.row_count} row(s) available.`;
+    }
+
+    async function validateWizardMapping() {
+      wizard.mappingNext.disabled = true;
+      wizard.mappingFeedback.textContent = 'Validating field mapping…';
+      const response = await fetch(buildUrl('/source/data/', {...getWizardSourceConfig(), ...getWizardFieldMapping()}));
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not validate the field mapping.');
+      pendingGeojson = payload.geojson;
+      wizard.mappingNext.disabled = false;
+      wizard.mappingFeedback.textContent = `${payload.geojson.features.length} point(s) validated and ready to save.`;
     }
 
     formElements.sourceType.addEventListener('change', () => {
       syncSourceFields();
-      saveConfig();
       showUnsavedSettings();
     });
     formElements.inspectButton.addEventListener('click', async () => {
@@ -829,11 +940,10 @@
       }
     });
     formElements.resetButton.addEventListener('click', async () => {
-      localStorage.removeItem(storageKey);
       applyConfig(defaultSourceConfig, defaultFieldMapping);
       showCurrentSettings();
       try {
-        await inspectSource(false, false);
+        await inspectSource(false);
         setFieldSelectValues(defaultFieldMapping);
         await renderMapData();
       } catch (error) {
@@ -842,7 +952,6 @@
     });
     document.querySelectorAll('input:not(.profile-control), select:not(.profile-control)').forEach((element) => {
       element.addEventListener('change', () => {
-        saveConfig();
         showUnsavedSettings();
       });
     });
@@ -854,8 +963,46 @@
       }
     });
 
-    formElements.saveProfileButton.addEventListener('click', saveProfile);
-    formElements.deleteProfileButton.addEventListener('click', deleteProfile);
+    formElements.newProfileButton.addEventListener('click', startNewProfile);
+    wizard.sourceType.addEventListener('change', () => {
+      syncWizardSourceFields();
+      wizard.sourceNext.disabled = true;
+    });
+    document.getElementById('wizard-inspect-source-button').addEventListener('click', async () => {
+      try { await inspectWizardSource(); } catch (error) {
+        wizard.sourceFeedback.textContent = error.message;
+        renderPreviewTable(wizard.previewTable, [], 'Could not inspect the source');
+      }
+    });
+    document.getElementById('source-selection-next-button').addEventListener('click', () => {
+      sourceSelectionModal.hide();
+      fieldMappingModal.show();
+    });
+    document.getElementById('wizard-validate-mapping-button').addEventListener('click', async () => {
+      try { await validateWizardMapping(); } catch (error) { wizard.mappingFeedback.textContent = error.message; }
+    });
+    document.getElementById('field-mapping-next-button').addEventListener('click', () => {
+      fieldMappingModal.hide();
+      profileNameModal.show();
+      formElements.profileName.focus();
+    });
+    formElements.saveProfileButton.addEventListener('click', async () => {
+      try { await saveProfile(); } catch (error) { formElements.profileNameFeedback.textContent = error.message; }
+    });
+    formElements.deleteProfileButton.addEventListener('click', async () => {
+      try { await deleteProfile(); } catch (error) { setFeedback(error.message, 'danger'); }
+    });
+    formElements.refreshProfileButton.addEventListener('click', async () => {
+      if (!activeProfileId) { setFeedback('Choose a profile to refresh.', 'danger'); return; }
+      try {
+        const response = await fetch(`/profiles/${encodeURIComponent(activeProfileId)}/refresh`, {method: 'POST'});
+        const profile = await response.json();
+        if (!response.ok) throw new Error(profile.error || 'Could not refresh profile.');
+        pendingGeojson = profile.geojson;
+        if (map.loaded()) addMapData(pendingGeojson);
+        setFeedback(`Profile "${profile.profile_name}" refreshed.`, 'success');
+      } catch (error) { setFeedback(error.message, 'danger'); }
+    });
     formElements.profileSelect.addEventListener('change', () => {
       if (formElements.profileSelect.value) {
         loadProfile(formElements.profileSelect.value);
@@ -864,8 +1011,8 @@
       }
     });
 
-    refreshProfileSelect();
+    refreshProfileSelect().catch((error) => setFeedback(error.message, 'danger'));
     syncSourceFields();
-    reloadFromStorage();
+    applyConfig(defaultSourceConfig, defaultFieldMapping);
   </script>
 {% endblock %}

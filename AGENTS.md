@@ -24,7 +24,9 @@ endpoint:
 docker build --tag atwood:local .
 docker rm --force atwood 2>/dev/null || true
 docker run --detach --name atwood --restart unless-stopped \
-  --publish 127.0.0.1:8080:8000 atwood:local
+  --publish 127.0.0.1:8080:8000 \
+  --mount type=bind,src="$(pwd)/datasets",dst=/app/datasets \
+  atwood:local
 curl --fail --silent --show-error http://127.0.0.1:8080/health
 ```
 

@@ -116,6 +116,8 @@ protobuf==7.36.2
     # via
     #   googleapis-common-protos
     #   opentelemetry-proto
+pyarrow==26.0.0
+    # via atwood
 pydantic==2.14.2
     # via
     #   fastapi

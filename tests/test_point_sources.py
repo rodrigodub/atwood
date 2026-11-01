@@ -45,6 +45,7 @@ def test_home_page_renders(client: TestClient) -> None:
     assert 'id="profiles-tab"' in response.text
     assert 'id="preview-modal"' in response.text
     assert response.text.index('id="preview-modal"') > response.text.index('id="map"')
+    assert response.text.index('let profiles = [];') < response.text.index('const map = new maplibregl.Map')
 
 
 def test_inspect_csv_source_returns_fields_and_preview(client: TestClient) -> None:
