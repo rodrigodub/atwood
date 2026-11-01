@@ -10,6 +10,8 @@ build
 dist
 docs
 tests
+datasets/profiles.parquet
+datasets/profiles.parquet.lock
 .env
 .env.*
 !.env.example

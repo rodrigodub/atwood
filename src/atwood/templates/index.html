@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Map{% endblock %}
+{% block title %}Atwood{% endblock %}
 
 {% block head_extra %}
-  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='main/img/favicon.png') }}" />
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.1.3/dist/maplibre-gl.css" />
 {% endblock %}
 
@@ -13,7 +13,7 @@
 {% block navbar_controls %}
   <div class="d-flex ms-lg-3 mt-3 mt-lg-0">
     <button class="btn btn-outline-warning btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#map-config-panel" aria-expanded="false" aria-controls="map-config-panel">
-      Map data settings
+      Settings
     </button>
   </div>
 {% endblock %}
@@ -21,89 +21,103 @@
 {% block navbar_panel %}
   <div class="collapse map-config-panel" id="map-config-panel">
     <div class="container-fluid py-3">
-      <div class="config-card mb-3">
-      <h2 class="h6 mb-3">Source</h2>
-      <div class="row g-3 align-items-end">
-        <div class="col-12 col-lg-2">
-          <label class="form-label" for="source-type">Source type</label>
-          <select class="form-select form-select-sm" id="source-type">
-            <option value="google_sheet">Google Sheet</option>
-            <option value="csv">CSV file</option>
-            <option value="sqlite">SQLite database</option>
-          </select>
-        </div>
-        <div class="col-12 col-lg-4 source-field source-field-google_sheet">
-          <label class="form-label" for="sheet-url">Google Sheet URL</label>
-          <input class="form-control form-control-sm" id="sheet-url" type="url">
-        </div>
-        <div class="col-6 col-lg-2 source-field source-field-google_sheet source-field-csv">
-          <label class="form-label" for="header-row">Header row</label>
-          <input class="form-control form-control-sm" id="header-row" type="number" min="1" step="1">
-        </div>
-        <div class="col-12 col-lg-4 source-field source-field-csv d-none">
-          <label class="form-label" for="csv-path">CSV file</label>
-          <input class="form-control form-control-sm" list="csv-path-options" id="csv-path" type="text">
-          <datalist id="csv-path-options">
-            {% for csv_file in available_source_options.csv_files %}
-              <option value="{{ csv_file }}"></option>
-            {% endfor %}
-          </datalist>
-        </div>
-        <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
-          <label class="form-label" for="sqlite-path">SQLite file</label>
-          <input class="form-control form-control-sm" list="sqlite-path-options" id="sqlite-path" type="text">
-          <datalist id="sqlite-path-options">
-            {% for sqlite_file in available_source_options.sqlite_files %}
-              <option value="{{ sqlite_file }}"></option>
-            {% endfor %}
-          </datalist>
-        </div>
-        <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
-          <label class="form-label" for="sqlite-table">SQLite table</label>
-          <select class="form-select form-select-sm" id="sqlite-table">
-            <option value="">Choose a table</option>
-          </select>
-        </div>
-        <div class="col-12 col-lg-2">
-          <button class="btn btn-primary btn-sm w-100" id="inspect-source-button" type="button">Load fields</button>
-        </div>
-      </div>
-      </div>
-
-      <div class="row g-3 mt-1">
-        <div class="col-12 col-xl-5">
+      <ul class="nav nav-tabs map-config-tabs" id="map-config-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="data-source-tab" data-bs-toggle="tab" data-bs-target="#data-source-pane" type="button" role="tab" aria-controls="data-source-pane" aria-selected="true">Data source</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="field-mapping-tab" data-bs-toggle="tab" data-bs-target="#field-mapping-pane" type="button" role="tab" aria-controls="field-mapping-pane" aria-selected="false">Field mapping</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="profiles-tab" data-bs-toggle="tab" data-bs-target="#profiles-pane" type="button" role="tab" aria-controls="profiles-pane" aria-selected="false">Profiles</button>
+        </li>
+      </ul>
+      <div class="tab-content map-config-tab-content" id="map-config-tab-content">
+        <div class="tab-pane fade show active" id="data-source-pane" role="tabpanel" aria-labelledby="data-source-tab" tabindex="0">
           <div class="config-card">
-            <h2 class="h6 mb-3">Field mapping</h2>
+            <h2 class="h6 mb-3">Choose map data</h2>
+            <div class="row g-3 align-items-end">
+              <div class="col-12 col-lg-2">
+                <label class="form-label" for="source-type">Source type</label>
+                <select class="form-select form-select-sm" id="source-type">
+                  <option value="google_sheet">Google Sheet</option>
+                  <option value="csv">CSV file</option>
+                  <option value="sqlite">SQLite database</option>
+                </select>
+              </div>
+              <div class="col-12 col-lg-4 source-field source-field-google_sheet">
+                <label class="form-label" for="sheet-url">Google Sheet URL</label>
+                <input class="form-control form-control-sm" id="sheet-url" type="url">
+              </div>
+              <div class="col-6 col-lg-2 source-field source-field-google_sheet source-field-csv">
+                <label class="form-label" for="header-row">Header row</label>
+                <input class="form-control form-control-sm" id="header-row" type="number" min="1" step="1">
+              </div>
+              <div class="col-12 col-lg-4 source-field source-field-csv d-none">
+                <label class="form-label" for="csv-path">CSV file</label>
+                <input class="form-control form-control-sm" list="csv-path-options" id="csv-path" type="text">
+                <datalist id="csv-path-options">
+                  {% for csv_file in available_source_options.csv_files %}
+                    <option value="{{ csv_file }}"></option>
+                  {% endfor %}
+                </datalist>
+              </div>
+              <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
+                <label class="form-label" for="sqlite-path">SQLite file</label>
+                <input class="form-control form-control-sm" list="sqlite-path-options" id="sqlite-path" type="text">
+                <datalist id="sqlite-path-options">
+                  {% for sqlite_file in available_source_options.sqlite_files %}
+                    <option value="{{ sqlite_file }}"></option>
+                  {% endfor %}
+                </datalist>
+              </div>
+              <div class="col-12 col-lg-3 source-field source-field-sqlite d-none">
+                <label class="form-label" for="sqlite-table">SQLite table</label>
+                <select class="form-select form-select-sm" id="sqlite-table">
+                  <option value="">Choose a table</option>
+                </select>
+              </div>
+              <div class="col-12 col-lg-2">
+                <button class="btn btn-primary btn-sm w-100" id="inspect-source-button" type="button">Load fields</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="field-mapping-pane" role="tabpanel" aria-labelledby="field-mapping-tab" tabindex="0">
+          <div class="config-card">
+            <h2 class="h6 mb-3">Match fields to map points</h2>
             <div class="row g-2">
-              <div class="col-6 col-lg-4">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="point-id-field">Point ID</label>
                 <select class="form-select form-select-sm field-mapping-select" id="point-id-field"></select>
               </div>
-              <div class="col-6 col-lg-4">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="x-coord-field">X coordinate</label>
                 <select class="form-select form-select-sm field-mapping-select" id="x-coord-field"></select>
               </div>
-              <div class="col-6 col-lg-4">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="y-coord-field">Y coordinate</label>
                 <select class="form-select form-select-sm field-mapping-select" id="y-coord-field"></select>
               </div>
-              <div class="col-6 col-lg-6">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="description-field">Description</label>
                 <select class="form-select form-select-sm field-mapping-select" id="description-field"></select>
               </div>
-              <div class="col-6 col-lg-6">
+              <div class="col-6 col-lg-3">
                 <label class="form-label" for="color-field">Point colour</label>
                 <input type="color" class="form-control form-control-sm form-control-color" id="color-field" value="#3388ff" title="Choose point colour">
                 <output class="small d-block mt-1" id="color-value" for="color-field">#3388ff</output>
               </div>
             </div>
-            <div class="d-flex gap-2 mt-3">
+            <div class="d-flex flex-wrap gap-2 mt-3">
               <button class="btn btn-success btn-sm" id="render-map-button" type="button">Render map</button>
               <button class="btn btn-outline-light btn-sm" id="reset-defaults-button" type="button">Reset defaults</button>
             </div>
           </div>
-          <div class="config-card mt-3">
-            <h2 class="h6 mb-3">Profiles</h2>
+        </div>
+        <div class="tab-pane fade" id="profiles-pane" role="tabpanel" aria-labelledby="profiles-tab" tabindex="0">
+          <div class="config-card">
+            <h2 class="h6 mb-3">Saved profiles</h2>
             <div class="row g-2 align-items-end">
               <div class="col-12 col-md-5">
                 <label class="form-label" for="profile-select">Profile</label>
@@ -112,28 +126,12 @@
                 </select>
               </div>
               <div class="col-12 col-md-7 d-flex flex-wrap gap-2">
-                <input class="form-control form-control-sm profile-control flex-grow-1" style="min-width: 10rem; width: auto;" id="profile-name" type="text" placeholder="Profile name" maxlength="60" aria-label="Profile name">
-                <button class="btn btn-outline-warning btn-sm text-nowrap" id="save-profile-button" type="button">Save profile</button>
+                <button class="btn btn-outline-warning btn-sm text-nowrap" id="new-profile-button" type="button">New +</button>
+                <button class="btn btn-outline-light btn-sm text-nowrap" id="refresh-profile-button" type="button">Refresh profile</button>
                 <button class="btn btn-outline-danger btn-sm text-nowrap" id="delete-profile-button" type="button">Delete profile</button>
               </div>
             </div>
-            <div class="form-text small mt-2">Profiles are saved in this browser only.</div>
-          </div>
-        </div>
-        <div class="col-12 col-xl-7">
-          <div class="config-card">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h2 class="h6 mb-0">Preview & validation</h2>
-              <span class="small" id="preview-summary"></span>
-            </div>
-            <div id="feedback-message" class="small mb-2" role="status" aria-live="polite"></div>
-            <div class="table-responsive">
-              <table class="table table-sm table-dark table-striped mb-0" id="preview-table">
-                <caption class="visually-hidden">Preview of the first rows of the selected data source</caption>
-                <thead><tr><th scope="col">Load a source to preview its data</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
+            <div class="form-text small mt-2">Profiles and cached map data are saved on this server.</div>
           </div>
         </div>
       </div>
@@ -146,6 +144,73 @@
 
 {% block content %}
   <div id="map"></div>
+  <div class="modal fade" id="preview-modal" tabindex="-1" aria-labelledby="preview-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content map-preview-modal">
+        <div class="modal-header">
+          <div>
+            <h2 class="modal-title fs-5" id="preview-modal-title">Preview &amp; validation</h2>
+            <span class="small" id="preview-summary"></span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close preview"></button>
+        </div>
+        <div class="modal-body">
+          <div id="feedback-message" class="small mb-3" role="status" aria-live="polite"></div>
+          <div class="table-responsive">
+            <table class="table table-sm table-dark table-striped mb-0" id="preview-table">
+              <caption class="visually-hidden">Preview of the first rows of the selected data source</caption>
+              <thead><tr><th scope="col">Load a source to preview its data</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-light btn-sm" data-bs-dismiss="modal">Continue to field mapping</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="source-selection-modal" tabindex="-1" aria-labelledby="source-selection-modal-title" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content map-preview-modal">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="source-selection-modal-title">1. Select source</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancel new profile"></button></div>
+      <div class="modal-body">
+        <p class="small">Choose a source and inspect its fields before mapping them.</p>
+        <div class="mb-2"><label class="form-label" for="wizard-source-type">Source type</label><select class="form-select" id="wizard-source-type"><option value="google_sheet">Google Sheet</option><option value="csv">CSV file</option><option value="sqlite">SQLite database</option></select></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-google_sheet"><label class="form-label" for="wizard-sheet-url">Google Sheet URL</label><input class="form-control" id="wizard-sheet-url" type="url"></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-csv"><label class="form-label" for="wizard-csv-path">CSV file</label><input class="form-control" id="wizard-csv-path" list="csv-path-options"></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-sqlite"><label class="form-label" for="wizard-sqlite-path">SQLite file</label><input class="form-control" id="wizard-sqlite-path" list="sqlite-path-options"></div>
+        <div class="mb-2 wizard-source-field wizard-source-field-sqlite"><label class="form-label" for="wizard-sqlite-table">SQLite table</label><select class="form-select" id="wizard-sqlite-table"><option value="">Choose a table</option></select></div>
+        <div class="mb-3 wizard-source-field wizard-source-field-google_sheet wizard-source-field-csv"><label class="form-label" for="wizard-header-row">Header row</label><input class="form-control" id="wizard-header-row" type="number" min="1" step="1"></div>
+        <button class="btn btn-outline-light btn-sm" id="wizard-inspect-source-button" type="button">Inspect source</button>
+        <div class="small mt-3" id="wizard-source-feedback" role="status" aria-live="polite"></div>
+        <div class="table-responsive mt-2"><table class="table table-sm table-dark mb-0" id="wizard-preview-table"><caption class="visually-hidden">Source preview</caption><thead><tr><th scope="col">Inspect a source to preview it</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary btn-sm" id="source-selection-next-button" disabled>Continue to field mapping</button></div>
+    </div></div>
+  </div>
+  <div class="modal fade" id="field-mapping-modal" tabindex="-1" aria-labelledby="field-mapping-modal-title" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content map-preview-modal">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="field-mapping-modal-title">2. Map fields</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancel new profile"></button></div>
+      <div class="modal-body">
+        <p class="small">Choose the fields used for each point, then validate the preview.</p>
+        <div class="mb-2"><label class="form-label" for="wizard-point-id-field">Point ID</label><select class="form-select wizard-field-mapping-select" id="wizard-point-id-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-x-coord-field">X coordinate</label><select class="form-select wizard-field-mapping-select" id="wizard-x-coord-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-y-coord-field">Y coordinate</label><select class="form-select wizard-field-mapping-select" id="wizard-y-coord-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-description-field">Description</label><select class="form-select wizard-field-mapping-select" id="wizard-description-field"></select></div>
+        <div class="mb-2"><label class="form-label" for="wizard-color-field">Point colour</label><input class="form-control form-control-color" id="wizard-color-field" type="color" value="#3388ff"></div>
+        <button type="button" class="btn btn-outline-light btn-sm" id="wizard-validate-mapping-button">Preview and validate</button>
+        <div class="small mt-3" id="wizard-mapping-feedback" role="status" aria-live="polite"></div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary btn-sm" id="field-mapping-next-button" disabled>Name profile</button></div>
+    </div></div>
+  </div>
+  <div class="modal fade" id="profile-name-modal" tabindex="-1" aria-labelledby="profile-name-modal-title" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content map-preview-modal">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="profile-name-modal-title">3. Save profile</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cancel new profile"></button></div>
+      <div class="modal-body"><label class="form-label" for="profile-name">Profile name</label><input class="form-control" id="profile-name" maxlength="60" required><div class="small mt-2" id="profile-name-feedback" role="status" aria-live="polite"></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-primary btn-sm" id="save-profile-button">Save profile</button></div>
+    </div></div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
@@ -153,8 +218,6 @@
   <script>
     const defaultSourceConfig = JSON.parse(document.getElementById('default-source-config').textContent);
     const defaultFieldMapping = JSON.parse(document.getElementById('default-field-mapping').textContent);
-    const storageKey = 'keyboard-odyssey.map-config.v1';
-    const profilesKey = 'keyboard-odyssey.map-profiles.v1';
 
     const formElements = {
       sourceType: document.getElementById('source-type'),
@@ -176,9 +239,41 @@
       resetButton: document.getElementById('reset-defaults-button'),
       profileSelect: document.getElementById('profile-select'),
       profileName: document.getElementById('profile-name'),
+      profileNameFeedback: document.getElementById('profile-name-feedback'),
       saveProfileButton: document.getElementById('save-profile-button'),
+      newProfileButton: document.getElementById('new-profile-button'),
+      refreshProfileButton: document.getElementById('refresh-profile-button'),
       deleteProfileButton: document.getElementById('delete-profile-button')
     };
+    const settingsPanel = document.getElementById('map-config-panel');
+    const previewModal = new bootstrap.Modal(document.getElementById('preview-modal'));
+    const sourceSelectionModal = new bootstrap.Modal(document.getElementById('source-selection-modal'));
+    const fieldMappingModal = new bootstrap.Modal(document.getElementById('field-mapping-modal'));
+    const profileNameModal = new bootstrap.Modal(document.getElementById('profile-name-modal'));
+    const fieldMappingTab = document.getElementById('field-mapping-tab');
+    const wizard = {
+      sourceType: document.getElementById('wizard-source-type'),
+      sheetUrl: document.getElementById('wizard-sheet-url'),
+      csvPath: document.getElementById('wizard-csv-path'),
+      sqlitePath: document.getElementById('wizard-sqlite-path'),
+      sqliteTable: document.getElementById('wizard-sqlite-table'),
+      headerRow: document.getElementById('wizard-header-row'),
+      pointIdField: document.getElementById('wizard-point-id-field'),
+      xCoordField: document.getElementById('wizard-x-coord-field'),
+      yCoordField: document.getElementById('wizard-y-coord-field'),
+      descriptionField: document.getElementById('wizard-description-field'),
+      colorField: document.getElementById('wizard-color-field'),
+      sourceFeedback: document.getElementById('wizard-source-feedback'),
+      mappingFeedback: document.getElementById('wizard-mapping-feedback'),
+      previewTable: document.getElementById('wizard-preview-table'),
+      sourceNext: document.getElementById('source-selection-next-button'),
+      mappingNext: document.getElementById('field-mapping-next-button')
+    };
+    let profileIndicator;
+    let profileDropdownButton;
+    let profileDropdownMenu;
+    let profiles = [];
+    let activeProfileId = null;
 
     const map = new maplibregl.Map({
       container: 'map',
@@ -245,7 +340,29 @@
     class BasemapControl {
       onAdd(mapInstance) {
         this.container = document.createElement('div');
-        this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+        this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group map-status-control';
+        const profileDropdown = document.createElement('div');
+        profileDropdown.className = 'dropdown map-profile-dropdown';
+        profileDropdownButton = document.createElement('button');
+        profileDropdownButton.type = 'button';
+        profileDropdownButton.className = 'map-profile-button dropdown-toggle';
+        profileDropdownButton.id = 'active-profile-control';
+        profileDropdownButton.setAttribute('data-bs-toggle', 'dropdown');
+        profileDropdownButton.setAttribute('aria-expanded', 'false');
+        profileDropdownButton.setAttribute('aria-label', 'Choose saved profile');
+        profileIndicator = document.createElement('span');
+        profileIndicator.id = 'active-profile-label';
+        profileIndicator.className = 'map-profile-indicator';
+        profileIndicator.setAttribute('aria-live', 'polite');
+        profileDropdownButton.appendChild(profileIndicator);
+        profileDropdownMenu = document.createElement('ul');
+        profileDropdownMenu.className = 'dropdown-menu dropdown-menu-dark map-profile-menu';
+        profileDropdownMenu.setAttribute('aria-labelledby', 'active-profile-control');
+        profileDropdown.append(profileDropdownButton, profileDropdownMenu);
+        this.container.appendChild(profileDropdown);
+        refreshMapProfileMenu();
+        showCurrentSettings();
+
         const button = document.createElement('button');
         button.type = 'button';
         button.style.width = 'auto';
@@ -284,28 +401,6 @@
     let pendingGeojson = null;
     let sourceReady = false;
 
-    function getStoredConfig() {
-      try {
-        const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        return {
-          sourceConfig: { ...defaultSourceConfig, ...(stored.sourceConfig || {}) },
-          fieldMapping: { ...defaultFieldMapping, ...(stored.fieldMapping || {}) }
-        };
-      } catch {
-        return {
-          sourceConfig: { ...defaultSourceConfig },
-          fieldMapping: { ...defaultFieldMapping }
-        };
-      }
-    }
-
-    function saveConfig() {
-      localStorage.setItem(storageKey, JSON.stringify({
-        sourceConfig: getSourceConfig(),
-        fieldMapping: getFieldMapping()
-      }));
-    }
-
     function getSourceConfig() {
       return {
         source_type: formElements.sourceType.value,
@@ -324,6 +419,22 @@
         y_coord_field: formElements.yCoordField.value,
         description_field: formElements.descriptionField.value,
         point_color: formElements.colorField.value
+      };
+    }
+
+    function getWizardSourceConfig() {
+      return {
+        source_type: wizard.sourceType.value, sheet_url: wizard.sheetUrl.value.trim(),
+        csv_path: wizard.csvPath.value.trim(), sqlite_path: wizard.sqlitePath.value.trim(),
+        sqlite_table: wizard.sqliteTable.value, header_row: wizard.headerRow.value || '1'
+      };
+    }
+
+    function getWizardFieldMapping() {
+      return {
+        point_id_field: wizard.pointIdField.value, x_coord_field: wizard.xCoordField.value,
+        y_coord_field: wizard.yCoordField.value, description_field: wizard.descriptionField.value,
+        point_color: wizard.colorField.value
       };
     }
 
@@ -415,9 +526,31 @@
       formElements.feedbackMessage.textContent = message;
     }
 
+    function setProfileIndicator(label) {
+      if (profileIndicator) {
+        profileIndicator.textContent = label;
+      }
+    }
+
+    function showCurrentSettings() {
+      setProfileIndicator('Current settings');
+    }
+
+    function showUnsavedSettings() {
+      setProfileIndicator('Unsaved settings');
+    }
+
+    function showProfile(name) {
+      setProfileIndicator(name);
+    }
+
     function renderPreview(rows, emptyMessage = 'Load a source to preview its data') {
-      const thead = formElements.previewTable.querySelector('thead');
-      const tbody = formElements.previewTable.querySelector('tbody');
+      renderPreviewTable(formElements.previewTable, rows, emptyMessage);
+    }
+
+    function renderPreviewTable(table, rows, emptyMessage = 'Load a source to preview its data') {
+      const thead = table.querySelector('thead');
+      const tbody = table.querySelector('tbody');
       thead.innerHTML = '';
       tbody.innerHTML = '';
 
@@ -549,7 +682,11 @@
       });
     }
 
-    async function inspectSource(persist = true) {
+    function showFieldMapping() {
+      bootstrap.Tab.getOrCreateInstance(fieldMappingTab).show();
+    }
+
+    async function inspectSource(showPreview = true) {
       sourceReady = false;
       setFeedback('Loading source fields…', 'info');
       renderPreview([], 'Loading…');
@@ -567,15 +704,18 @@
         (payload.fields || []).length ? 'No rows returned' : 'Choose a source table to preview its data'
       );
       sourceReady = (payload.fields || []).length > 0;
-      if (persist) {
-        saveConfig();
-      }
       setFeedback(
         sourceReady
           ? 'Source loaded. Confirm or adjust the field mappings, then render the map.'
           : 'Choose a SQLite table to continue.',
         sourceReady ? 'success' : 'warning'
       );
+      if (sourceReady) {
+        showFieldMapping();
+      }
+      if (showPreview) {
+        previewModal.show();
+      }
       return payload;
     }
 
@@ -596,99 +736,189 @@
       if (map.loaded()) {
         addMapData(pendingGeojson);
       }
-      saveConfig();
       setFeedback(`Loaded ${payload.geojson.features.length} point(s) on the map.`, 'success');
     }
 
-    function getProfiles() {
-      try {
-        const profiles = JSON.parse(localStorage.getItem(profilesKey) || '{}');
-        return profiles && typeof profiles === 'object' && !Array.isArray(profiles) ? profiles : {};
-      } catch {
-        return {};
-      }
-    }
-
-    function refreshProfileSelect(selectedName = '') {
-      const names = Object.keys(getProfiles()).sort((a, b) => a.localeCompare(b));
+    async function refreshProfileSelect(selectedId = activeProfileId) {
+      const response = await fetch('/profiles/');
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not load profiles.');
+      profiles = payload.profiles;
       formElements.profileSelect.innerHTML = '<option value="">Choose a saved profile</option>';
-      names.forEach((name) => {
+      profiles.forEach((profile) => {
         const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        option.selected = name === selectedName;
+        option.value = profile.profile_id;
+        option.textContent = profile.profile_name;
+        option.selected = profile.profile_id === selectedId;
         formElements.profileSelect.appendChild(option);
       });
+      refreshMapProfileMenu();
     }
 
-    function saveProfile() {
+    function refreshMapProfileMenu() {
+      if (!profileDropdownMenu) {
+        return;
+      }
+
+      profileDropdownMenu.replaceChildren();
+      if (!profiles.length) {
+        const emptyItem = document.createElement('li');
+        const emptyMessage = document.createElement('span');
+        emptyMessage.className = 'dropdown-item-text';
+        emptyMessage.textContent = 'No saved profiles';
+        emptyItem.appendChild(emptyMessage);
+        profileDropdownMenu.appendChild(emptyItem);
+      }
+
+      profiles.forEach((profile) => {
+        const item = document.createElement('li');
+        const option = document.createElement('button');
+        option.type = 'button';
+        option.className = 'dropdown-item';
+        option.textContent = profile.profile_name;
+        option.addEventListener('click', () => {
+          formElements.profileSelect.value = profile.profile_id;
+          bootstrap.Dropdown.getOrCreateInstance(profileDropdownButton).hide();
+          loadProfile(profile.profile_id);
+        });
+        item.appendChild(option);
+        profileDropdownMenu.appendChild(item);
+      });
+      const newItem = document.createElement('li');
+      const newOption = document.createElement('button');
+      newOption.type = 'button';
+      newOption.className = 'dropdown-item';
+      newOption.textContent = 'New +';
+      newOption.addEventListener('click', startNewProfile);
+      newItem.appendChild(newOption);
+      profileDropdownMenu.appendChild(newItem);
+    }
+
+    async function saveProfile() {
       const name = formElements.profileName.value.trim();
       if (!name) {
-        setFeedback('Enter a profile name before saving.', 'danger');
+        formElements.profileNameFeedback.textContent = 'Enter a profile name before saving.';
         return;
       }
-      const profiles = getProfiles();
-      if (Object.prototype.hasOwnProperty.call(profiles, name)
-          && !window.confirm(`Profile "${name}" already exists. Overwrite it?`)) {
-        return;
-      }
-      profiles[name] = { sourceConfig: getSourceConfig(), fieldMapping: getFieldMapping() };
-      localStorage.setItem(profilesKey, JSON.stringify(profiles));
-      refreshProfileSelect(name);
-      setFeedback(`Profile "${name}" saved.`, 'success');
+      const response = await fetch('/profiles/', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({profile_name: name, source_config: getWizardSourceConfig(), field_mapping: getWizardFieldMapping()})
+      });
+      const profile = await response.json();
+      if (!response.ok) throw new Error(profile.error || 'Could not save profile.');
+      activeProfileId = profile.profile_id;
+      profileNameModal.hide();
+      applyConfig(getWizardSourceConfig(), getWizardFieldMapping());
+      await refreshProfileSelect();
+      pendingGeojson = profile.geojson;
+      if (map.loaded()) addMapData(pendingGeojson);
+      showProfile(profile.profile_name);
+      setFeedback(`Profile "${profile.profile_name}" saved.`, 'success');
     }
 
-    async function loadProfile(name) {
-      const profile = getProfiles()[name];
-      if (!profile) {
-        return;
-      }
-      const sourceConfig = { ...defaultSourceConfig, ...profile.sourceConfig };
-      const fieldMapping = { ...defaultFieldMapping, ...profile.fieldMapping };
-      formElements.profileName.value = name;
-      applyConfig(sourceConfig, fieldMapping);
+    async function loadProfile(profileId) {
+      const response = await fetch(`/profiles/${encodeURIComponent(profileId)}`);
+      const profile = await response.json();
+      if (!response.ok) throw new Error(profile.error || 'Could not load profile.');
+      activeProfileId = profile.profile_id;
+      formElements.profileSelect.value = profile.profile_id;
+      applyConfig(profile.source_config, profile.field_mapping);
       try {
-        await inspectSource(false);
-        setFieldSelectValues(fieldMapping);
-        await renderMapData();
-        setFeedback(`Profile "${name}" loaded.`, 'success');
+        pendingGeojson = profile.geojson;
+        if (map.loaded()) addMapData(pendingGeojson);
+        showProfile(profile.profile_name);
+        setFeedback(`Profile "${profile.profile_name}" loaded from cache.`, 'success');
       } catch (error) {
         setFeedback(error.message, 'danger');
       }
     }
 
-    function deleteProfile() {
-      const name = formElements.profileSelect.value;
-      if (!name) {
+    async function deleteProfile() {
+      const profile = profiles.find((item) => item.profile_id === activeProfileId);
+      if (!profile) {
         setFeedback('Choose a profile to delete.', 'danger');
         return;
       }
-      if (!window.confirm(`Delete profile "${name}"?`)) {
+      if (!window.confirm(`Delete profile "${profile.profile_name}"?`)) {
         return;
       }
-      const profiles = getProfiles();
-      delete profiles[name];
-      localStorage.setItem(profilesKey, JSON.stringify(profiles));
-      refreshProfileSelect();
+      const response = await fetch(`/profiles/${encodeURIComponent(profile.profile_id)}`, {method: 'DELETE'});
+      if (!response.ok) throw new Error('Could not delete profile.');
+      activeProfileId = null;
+      await refreshProfileSelect();
       formElements.profileName.value = '';
-      setFeedback(`Profile "${name}" deleted.`, 'success');
+      showCurrentSettings();
+      setFeedback(`Profile "${profile.profile_name}" deleted.`, 'success');
     }
 
-    async function reloadFromStorage() {
-      const stored = getStoredConfig();
-      applyConfig(stored.sourceConfig, stored.fieldMapping);
-      try {
-        await inspectSource(false);
-        setFieldSelectValues(stored.fieldMapping);
-        await renderMapData();
-      } catch (error) {
-        setFeedback(error.message, 'danger');
-      }
+    function startNewProfile() {
+      const source = getSourceConfig();
+      wizard.sourceType.value = source.source_type;
+      wizard.sheetUrl.value = source.sheet_url;
+      wizard.csvPath.value = source.csv_path;
+      wizard.sqlitePath.value = source.sqlite_path;
+      wizard.headerRow.value = source.header_row;
+      wizard.colorField.value = formElements.colorField.value;
+      syncWizardSourceFields();
+      wizard.sourceNext.disabled = true;
+      wizard.mappingNext.disabled = true;
+      wizard.sourceFeedback.textContent = '';
+      wizard.mappingFeedback.textContent = '';
+      formElements.profileNameFeedback.textContent = '';
+      renderPreviewTable(wizard.previewTable, [], 'Inspect a source to preview it');
+      sourceSelectionModal.show();
+    }
+
+    function syncWizardSourceFields() {
+      const sourceType = wizard.sourceType.value;
+      document.querySelectorAll('.wizard-source-field').forEach((element) => {
+        element.classList.toggle('d-none', !element.classList.contains(`wizard-source-field-${sourceType}`));
+      });
+    }
+
+    function populateWizardFields(fields) {
+      const preferred = getFieldMapping();
+      const elements = {
+        point_id_field: wizard.pointIdField, x_coord_field: wizard.xCoordField,
+        y_coord_field: wizard.yCoordField, description_field: wizard.descriptionField
+      };
+      Object.entries(elements).forEach(([key, select]) => {
+        select.replaceChildren(new Option('Choose a field', ''));
+        fields.forEach((field) => select.add(new Option(field, field, false, field === preferred[key])));
+      });
+    }
+
+    async function inspectWizardSource() {
+      wizard.sourceNext.disabled = true;
+      wizard.mappingNext.disabled = true;
+      wizard.sourceFeedback.textContent = 'Inspecting source…';
+      const response = await fetch(buildUrl('/source/inspect/', getWizardSourceConfig()));
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not inspect the selected source.');
+      wizard.sqliteTable.replaceChildren(new Option('Choose a table', ''));
+      (payload.sqlite_tables || []).forEach((table) => wizard.sqliteTable.add(new Option(table, table, false, table === getWizardSourceConfig().sqlite_table)));
+      populateWizardFields(payload.fields || []);
+      populateFieldSelects(payload.fields || [], getWizardFieldMapping());
+      renderPreviewTable(wizard.previewTable, payload.preview_rows || [], 'No rows returned');
+      wizard.sourceNext.disabled = !(payload.fields || []).length;
+      wizard.sourceFeedback.textContent = wizard.sourceNext.disabled
+        ? 'Choose a SQLite table, then inspect the source again.' : `${payload.row_count} row(s) available.`;
+    }
+
+    async function validateWizardMapping() {
+      wizard.mappingNext.disabled = true;
+      wizard.mappingFeedback.textContent = 'Validating field mapping…';
+      const response = await fetch(buildUrl('/source/data/', {...getWizardSourceConfig(), ...getWizardFieldMapping()}));
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not validate the field mapping.');
+      pendingGeojson = payload.geojson;
+      wizard.mappingNext.disabled = false;
+      wizard.mappingFeedback.textContent = `${payload.geojson.features.length} point(s) validated and ready to save.`;
     }
 
     formElements.sourceType.addEventListener('change', () => {
       syncSourceFields();
-      saveConfig();
+      showUnsavedSettings();
     });
     formElements.inspectButton.addEventListener('click', async () => {
       try {
@@ -697,18 +927,21 @@
         formElements.previewSummary.textContent = '';
         renderPreview([], 'Could not load the source');
         setFeedback(error.message, 'danger');
+        previewModal.show();
       }
     });
     formElements.renderButton.addEventListener('click', async () => {
       try {
         await renderMapData();
+        bootstrap.Collapse.getOrCreateInstance(settingsPanel).hide();
       } catch (error) {
         setFeedback(error.message, 'danger');
+        previewModal.show();
       }
     });
     formElements.resetButton.addEventListener('click', async () => {
-      localStorage.removeItem(storageKey);
       applyConfig(defaultSourceConfig, defaultFieldMapping);
+      showCurrentSettings();
       try {
         await inspectSource(false);
         setFieldSelectValues(defaultFieldMapping);
@@ -718,7 +951,9 @@
       }
     });
     document.querySelectorAll('input:not(.profile-control), select:not(.profile-control)').forEach((element) => {
-      element.addEventListener('change', saveConfig);
+      element.addEventListener('change', () => {
+        showUnsavedSettings();
+      });
     });
 
     map.on('load', () => {
@@ -728,16 +963,56 @@
       }
     });
 
-    formElements.saveProfileButton.addEventListener('click', saveProfile);
-    formElements.deleteProfileButton.addEventListener('click', deleteProfile);
+    formElements.newProfileButton.addEventListener('click', startNewProfile);
+    wizard.sourceType.addEventListener('change', () => {
+      syncWizardSourceFields();
+      wizard.sourceNext.disabled = true;
+    });
+    document.getElementById('wizard-inspect-source-button').addEventListener('click', async () => {
+      try { await inspectWizardSource(); } catch (error) {
+        wizard.sourceFeedback.textContent = error.message;
+        renderPreviewTable(wizard.previewTable, [], 'Could not inspect the source');
+      }
+    });
+    document.getElementById('source-selection-next-button').addEventListener('click', () => {
+      sourceSelectionModal.hide();
+      fieldMappingModal.show();
+    });
+    document.getElementById('wizard-validate-mapping-button').addEventListener('click', async () => {
+      try { await validateWizardMapping(); } catch (error) { wizard.mappingFeedback.textContent = error.message; }
+    });
+    document.getElementById('field-mapping-next-button').addEventListener('click', () => {
+      fieldMappingModal.hide();
+      profileNameModal.show();
+      formElements.profileName.focus();
+    });
+    formElements.saveProfileButton.addEventListener('click', async () => {
+      try { await saveProfile(); } catch (error) { formElements.profileNameFeedback.textContent = error.message; }
+    });
+    formElements.deleteProfileButton.addEventListener('click', async () => {
+      try { await deleteProfile(); } catch (error) { setFeedback(error.message, 'danger'); }
+    });
+    formElements.refreshProfileButton.addEventListener('click', async () => {
+      if (!activeProfileId) { setFeedback('Choose a profile to refresh.', 'danger'); return; }
+      try {
+        const response = await fetch(`/profiles/${encodeURIComponent(activeProfileId)}/refresh`, {method: 'POST'});
+        const profile = await response.json();
+        if (!response.ok) throw new Error(profile.error || 'Could not refresh profile.');
+        pendingGeojson = profile.geojson;
+        if (map.loaded()) addMapData(pendingGeojson);
+        setFeedback(`Profile "${profile.profile_name}" refreshed.`, 'success');
+      } catch (error) { setFeedback(error.message, 'danger'); }
+    });
     formElements.profileSelect.addEventListener('change', () => {
       if (formElements.profileSelect.value) {
         loadProfile(formElements.profileSelect.value);
+      } else {
+        showCurrentSettings();
       }
     });
 
-    refreshProfileSelect();
+    refreshProfileSelect().catch((error) => setFeedback(error.message, 'danger'));
     syncSourceFields();
-    reloadFromStorage();
+    applyConfig(defaultSourceConfig, defaultFieldMapping);
   </script>
 {% endblock %}

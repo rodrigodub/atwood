@@ -14,12 +14,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src
 
-RUN groupadd --system atwood && useradd --system --gid atwood atwood
+RUN groupadd --gid 10001 atwood && useradd --uid 10001 --gid atwood --create-home atwood
 
 COPY --from=dependencies /install /usr/local
 COPY src ./src
-COPY datasets ./datasets
-COPY db.sqlite3 .
+COPY --chown=atwood:atwood datasets ./datasets
+COPY --chown=atwood:atwood db.sqlite3 .
 
 USER atwood
 

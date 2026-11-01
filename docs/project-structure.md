@@ -9,6 +9,7 @@ Atwood starts as a small Python application. Keep the current layout until a fea
 │   ├── agents/                        # Specialized Copilot agent profiles
 │   │   ├── planner.agent.md           # Breaks features into tasks, no code edits
 │   │   ├── implementer.agent.md       # Writes code from the plan
+│   │   ├── web-designer.agent.md      # Designs map and settings interactions
 │   │   ├── reviewer.agent.md          # Reviews for quality, security, tests
 │   │   └── tester.agent.md            # Writes and runs tests
 │   ├── copilot-instructions.md        # Shared agent conventions
