@@ -218,6 +218,7 @@
   <script>
     const defaultSourceConfig = JSON.parse(document.getElementById('default-source-config').textContent);
     const defaultFieldMapping = JSON.parse(document.getElementById('default-field-mapping').textContent);
+    const activeProfileStorageKey = 'atwood.active-profile.v1';
 
     const formElements = {
       sourceType: document.getElementById('source-type'),
@@ -274,6 +275,30 @@
     let profileDropdownMenu;
     let profiles = [];
     let activeProfileId = null;
+
+    function getPersistedActiveProfileId() {
+      try {
+        return localStorage.getItem(activeProfileStorageKey);
+      } catch {
+        return null;
+      }
+    }
+
+    function persistActiveProfile(profileId) {
+      try {
+        localStorage.setItem(activeProfileStorageKey, profileId);
+      } catch {
+        // Continue when browser storage is unavailable.
+      }
+    }
+
+    function clearPersistedActiveProfile() {
+      try {
+        localStorage.removeItem(activeProfileStorageKey);
+      } catch {
+        // Continue when browser storage is unavailable.
+      }
+    }
 
     const map = new maplibregl.Map({
       container: 'map',
@@ -807,6 +832,7 @@
       const profile = await response.json();
       if (!response.ok) throw new Error(profile.error || 'Could not save profile.');
       activeProfileId = profile.profile_id;
+      persistActiveProfile(profile.profile_id);
       profileNameModal.hide();
       applyConfig(getWizardSourceConfig(), getWizardFieldMapping());
       await refreshProfileSelect();
@@ -816,10 +842,14 @@
       setFeedback(`Profile "${profile.profile_name}" saved.`, 'success');
     }
 
-    async function loadProfile(profileId) {
+    async function loadProfile(profileId, {silent = false} = {}) {
       const response = await fetch(`/profiles/${encodeURIComponent(profileId)}`);
       const profile = await response.json();
-      if (!response.ok) throw new Error(profile.error || 'Could not load profile.');
+      if (!response.ok) {
+        const error = new Error(profile.error || 'Could not load profile.');
+        error.status = response.status;
+        throw error;
+      }
       activeProfileId = profile.profile_id;
       formElements.profileSelect.value = profile.profile_id;
       applyConfig(profile.source_config, profile.field_mapping);
@@ -827,9 +857,15 @@
         pendingGeojson = profile.geojson;
         if (map.loaded()) addMapData(pendingGeojson);
         showProfile(profile.profile_name);
-        setFeedback(`Profile "${profile.profile_name}" loaded from cache.`, 'success');
+        persistActiveProfile(profile.profile_id);
+        if (!silent) {
+          setFeedback(`Profile "${profile.profile_name}" loaded from cache.`, 'success');
+        }
       } catch (error) {
-        setFeedback(error.message, 'danger');
+        if (!silent) {
+          setFeedback(error.message, 'danger');
+        }
+        throw error;
       }
     }
 
@@ -845,6 +881,7 @@
       const response = await fetch(`/profiles/${encodeURIComponent(profile.profile_id)}`, {method: 'DELETE'});
       if (!response.ok) throw new Error('Could not delete profile.');
       activeProfileId = null;
+      clearPersistedActiveProfile();
       await refreshProfileSelect();
       formElements.profileName.value = '';
       showCurrentSettings();
@@ -1011,8 +1048,29 @@
       }
     });
 
-    refreshProfileSelect().catch((error) => setFeedback(error.message, 'danger'));
     syncSourceFields();
     applyConfig(defaultSourceConfig, defaultFieldMapping);
+    refreshProfileSelect()
+      .then(async () => {
+        const profileId = getPersistedActiveProfileId();
+        if (!profileId) {
+          if (profileId !== null) {
+            clearPersistedActiveProfile();
+          }
+          return;
+        }
+        if (!profiles.some((profile) => profile.profile_id === profileId)) {
+          clearPersistedActiveProfile();
+          return;
+        }
+        try {
+          await loadProfile(profileId, {silent: true});
+        } catch (error) {
+          if (error.status === 404) {
+            clearPersistedActiveProfile();
+          }
+        }
+      })
+      .catch((error) => setFeedback(error.message, 'danger'));
   </script>
 {% endblock %}

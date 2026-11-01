@@ -108,4 +108,12 @@ def test_page_contains_server_profile_flow(client: TestClient) -> None:
     assert 'id="new-profile-button"' in page.text
     assert "newOption.textContent = 'New +'" in page.text
     assert "profileDropdownMenu.appendChild(newItem);" in page.text
-    assert "localStorage" not in page.text
+    assert "const activeProfileStorageKey = 'atwood.active-profile.v1';" in page.text
+    assert "localStorage.setItem(activeProfileStorageKey, profileId);" in page.text
+    assert "await loadProfile(profileId, {silent: true});" in page.text
+
+    profile_list_loaded = page.text.index("refreshProfileSelect()\n      .then(async () => {")
+    persisted_profile_checked = page.text.index(
+        "const profileId = getPersistedActiveProfileId();"
+    )
+    assert profile_list_loaded < persisted_profile_checked
